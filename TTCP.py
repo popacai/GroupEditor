@@ -4,6 +4,9 @@
 class TTCP():
     def __init__(self):
         pass
+    
+    def listen(self, addr):
+        pass
 
     def connect(self, addr):
         print "connect", addr
@@ -17,6 +20,9 @@ class TTCP():
 
     def close(self):
         print "connect close"
+
+    def __del__(self):
+        pass
 
 
 

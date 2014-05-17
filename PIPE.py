@@ -18,6 +18,9 @@ class PIPE():
         #return
         data = data.replace("\n", "\x01")
         self.writer.write(data + "\n")
+    def close(self):
+        self.writer.close()
+        self.reader.close()
     def __del__(self):
         self.writer.close()
         self.reader.close()
@@ -27,5 +30,8 @@ if __name__ == "__main__":
     p = PIPE()
     for i in range(10):
         p.write(str(i) * 100)
-    while True:
+    for i in range(9):
         print p.read()+"*"
+    p.close()
+    print p.read()+"*"
+

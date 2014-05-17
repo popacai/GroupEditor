@@ -1,37 +1,221 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-class TTCP():
-    def __init__(self):
-        pass
+#TRTCP and TSTCP
+
+import socket
+from threading import Thread
+from PIPE import PIPE
+import threading
+import time
+
+# Threading recv TCP
+class TRTCP(Thread):
+    def __init__(self, sock, addr, output_pipe, signal_pipe):
+        Thread.__init__(self)
+        self.sock = sock
+        self.addr = addr
+        self.output_pipe = output_pipe
+        self.signal_pipe = signal_pipe
+
+    def run(self):
+        while True:
+            try:
+                data = self.sock.recv(1500)
+                if not data:
+                    self.sock.close()
+                    self.signal_pipe.write("socket_close:" + str(self.addr))
+                    # output_pipe message
+
+            except:
+                self.signal_pipe.write("socket_err:" + str(self.addr))
+                self.sock.close()
+                return
+
+            try:
+                self.output_pipe.write(data)
+            except:
+                self.signal_pipe.write("output_pipe_err:" + str(self.addr))
+                return
+
+# Threading send TCP
+class TSTCP(Thread):
+    def __init__(self, sock, addr, input_pipe, signal_pipe):
+        Thread.__init__(self)
+        self.sock = sock
+        self.addr = addr
+        self.input_pipe = input_pipe
+        self.signal_pipe = signal_pipe
     
-    def listen(self, addr):
-        pass
+    def run(self): 
+        while True:
+            try:
+                data = self.input_pipe.read()
+            except:
+                #self.input_pipe break;
+                self.signal_pipe.write("input_pipe_err:" + str(self.addr))
+                self.sock.close()
+                return
 
-    def connect(self, addr):
-        print "connect", addr
-
-    def send(self, data):
-        print "send", data
-        self.data = data
-        
-    def recv(self):
-        return self.data
-
-    def close(self):
-        print "connect close"
-
-    def __del__(self):
-        pass
-
+            try:
+                self.sock.sendall(data)
+            except:
+                self.signal_pipe.write("socket_err:" + str(self.addr))
+                self.sock.close()
+                #self.sock break
+                return
+    
 
 
 if __name__ == "__main__":
-    ttcp = TTCP()
-    ttcp.connect("12.1.1.1")
-    ttcp.send("123")
-    print ttcp.recv()
-    ttcp.close()
+    '''
+    testing:
 
+    case 1: server, curl_test>
+        output_pipe, and signal_pipe testing
+    case 2: server, client
+        ...
+    case 3: chatting s-c
+        as a toy
+    '''
+
+
+    import sys
+    def pause_script():
+        raw_input("pause")
+
+    class read_pipe(Thread):
+        def __init__(self, pipe):
+            Thread.__init__(self)
+            self.pipe = pipe
+        def run(self):
+            while True:
+                print self.pipe.read()
+        
+
+
+    if sys.argv[1] == "server":
+        signal_pipe = PIPE()
+        output_pipe = PIPE()
+        input_pipes = [PIPE(), PIPE(), PIPE()]
+        #server
+        server = socket.socket()
+        server.bind(("localhost", 12222))
+        server.listen(10)
+        number = 0
+
+        t_signal = read_pipe(signal_pipe)
+        t_output = read_pipe(output_pipe)
+        t_signal.setDaemon(True)
+        t_output.setDaemon(True)
+        t_signal.start()
+        t_output.start()
+
+        socket_list = []
+        for i in range(3):
+            client_sock, client_addr = server.accept()
+            t1 = TSTCP(client_sock, client_addr, input_pipes[i], signal_pipe)
+            t1.setDaemon(True)
+            t1.start()
+
+            t2 = TRTCP(client_sock, client_addr, output_pipe, signal_pipe)
+            t2.setDaemon(True)
+            t2.start()
+
+        print 'connection built'
+        pause_script()
+
+        for i in range(3):
+            input_pipes[i].write(str(i))
+        pause_script()
+
+        #close the connection
+        for i in socket_list:
+            i.close()
+
+        print 'exit'
+
+    if sys.argv[1] == "curl_test":
+        import os
+        os.system("timeout 5 curl localhost:12222&")
+        os.system("timeout 2 curl localhost:12222&")
+        os.system("sleep 1; timeout 2 curl localhost:12222&")
+        time.sleep(5)
+
+    if sys.argv[1] == "client":
+        addr = ("localhost", 12222)
+        s = socket.socket()
+        s.connect(addr)
+
+        signal_pipe = PIPE()
+        output_pipe = PIPE()
+        input_pipe = PIPE()
+
+        t_signal = read_pipe(signal_pipe)
+        t_output = read_pipe(output_pipe)
+        t_signal.setDaemon(True)
+        t_output.setDaemon(True)
+        t_signal.start()
+        t_output.start()
+
+        t1 = TSTCP(s, addr, input_pipe, signal_pipe)
+        t1.setDaemon(True)
+        t1.start()
+
+        t2 = TRTCP(s, addr, output_pipe, signal_pipe)
+        t2.setDaemon(True)
+        t2.start()
+
+        while True:
+            message = raw_input("")
+            if (message == "q"):
+                break
+            input_pipe.write(message)
+        s.close()
+
+    if sys.argv[1] == "server_c": #chatting server
+        class forward_pipe(Thread):
+            def __init__(self, src, dst):
+                Thread.__init__(self)
+                self.dst = dst
+                self.src = src
+            def run(self):
+                while True:
+                    data = self.src.read()
+                    for each_dst in self.dst:
+                        each_dst.write(data)
+
+        signal_pipe = PIPE()
+        output_pipe = PIPE()
+        input_pipes = []
+        #server
+        server = socket.socket()
+        server.bind(("localhost", 12222))
+        server.listen(10)
+        number = 0
+
+        t_signal = read_pipe(signal_pipe)
+        #t_output = read_pipe(output_pipe)
+        t_output = forward_pipe(output_pipe, input_pipes)
+        t_signal.setDaemon(True)
+        t_output.setDaemon(True)
+        t_signal.start()
+        t_output.start()
+
+        socket_list = []
+        while True:
+            client_sock, client_addr = server.accept()
+
+            pipe = PIPE()
+            input_pipes.append(pipe)
+            t1 = TSTCP(client_sock, client_addr, pipe, signal_pipe)
+            t1.setDaemon(True)
+            t1.start()
+
+            t2 = TRTCP(client_sock, client_addr, output_pipe, signal_pipe)
+            t2.setDaemon(True)
+            t2.start()
+
+        print 'exit'
 
 

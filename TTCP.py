@@ -18,24 +18,38 @@ class TRTCP(Thread):
         self.output_pipe = output_pipe
         self.signal_pipe = signal_pipe
 
+    def close(self):
+        try:
+            self.sock.shutdown(socket.SHUT_RDWR)
+            self.sock.close()
+            self.signal_pipe.write("addr closed " + str(self.addr))
+        except:
+            pass
+
+
     def run(self):
+        self.sock.settimeout(5) # Don't wait too much time
         while True:
             try:
                 data = self.sock.recv(1500)
                 if not data:
                     self.sock.close()
                     self.signal_pipe.write("socket_close:" + str(self.addr))
+                    self.close()
                     # output_pipe message
-
+            except socket.timeout, e:
+                continue
             except:
                 self.signal_pipe.write("socket_err:" + str(self.addr))
                 self.sock.close()
+                self.close()
                 return
 
             try:
                 self.output_pipe.write(data)
             except:
                 self.signal_pipe.write("output_pipe_err:" + str(self.addr))
+                self.close()
                 return
 
 # Threading send TCP
@@ -47,6 +61,13 @@ class TSTCP(Thread):
         self.input_pipe = input_pipe
         self.signal_pipe = signal_pipe
     
+    def close(self):
+        try:
+            self.sock.close()
+            self.input_pipe.close()
+            self.signal_pipe.write("addr closed " + str(self.addr))
+        except:
+            pass
     def run(self): 
         while True:
             try:
@@ -55,7 +76,7 @@ class TSTCP(Thread):
                 #self.input_pipe break;
                 self.signal_pipe.write("input_pipe_err:" + str(self.addr))
                 self.sock.close()
-                return
+                break
 
             try:
                 self.sock.sendall(data)
@@ -63,8 +84,7 @@ class TSTCP(Thread):
                 self.signal_pipe.write("socket_err:" + str(self.addr))
                 self.sock.close()
                 #self.sock break
-                return
-    
+                break
 
 
 if __name__ == "__main__":
@@ -122,7 +142,6 @@ if __name__ == "__main__":
             t2.setDaemon(True)
             t2.start()
 
-        print 'connection built'
         pause_script()
 
         for i in range(3):
@@ -133,7 +152,6 @@ if __name__ == "__main__":
         for i in socket_list:
             i.close()
 
-        print 'exit'
 
     if sys.argv[1] == "curl_test":
         import os
@@ -216,6 +234,5 @@ if __name__ == "__main__":
             t2.setDaemon(True)
             t2.start()
 
-        print 'exit'
 
 

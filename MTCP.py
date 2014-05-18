@@ -2,6 +2,7 @@
 #-*- coding: utf-8 -*-
 
 from threading import Thread
+from TTCP import *
 
 class MTCP():
     def __init__(self, output_pipe, signal_pipe):
@@ -9,8 +10,14 @@ class MTCP():
         self.output_pipe = output_pipe
         self.signal_pipe = signal_pipe
 
-        self.tr_list = []
-        self.ts_list = []
+        self.tr_list = {}
+        self.ts_list = {}
+    def close(self, addr):
+        self.tr_list[addr].close()
+        self.ts_list[addr].close()
+
+        del self.tr_list[addr]
+        del self.ts_list[addr]
 
     def new_connect(self, sock, addr, input_pipe):
         #This will create connection with addr
@@ -25,8 +32,9 @@ class MTCP():
         tr.start()
         ts.start()
 
-        self.tr_list.append(tr)
-        self.ts_list.append(ts)
+        self.tr_list[addr] = tr
+        self.ts_list[addr] = ts
+        
 
 
 if __name__ == "__main__":

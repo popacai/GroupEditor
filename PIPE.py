@@ -2,11 +2,13 @@
 #-*- coding: utf-8 -*-
 
 import os
+import threading
 class PIPE():
     def __init__(self):
         self.r, self.w = os.pipe()
         self.writer = os.fdopen(self.w, "w", 0)
         self.reader = os.fdopen(self.r, "r", 0)
+        self.lock = threading.Lock()
 
     def read(self):
         #return os.read(self.r, 1024)
@@ -16,14 +18,21 @@ class PIPE():
     def write(self, data):
         #os.write(self.w, data)
         #return
+
         data = data.replace("\n", "\x01")
         self.writer.write(data + "\n")
     def close(self):
-        self.writer.close()
-        self.reader.close()
+        try:
+            self.writer.close()
+        except:
+            pass
+
+        try:
+            self.reader.close()
+        except:
+            pass
     def __del__(self):
-        self.writer.close()
-        self.reader.close()
+        self.close()
 
 
 if __name__ == "__main__":

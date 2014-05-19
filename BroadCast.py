@@ -99,7 +99,7 @@ if __name__ == "__main__":
         def run(self):
             count = 0
             while True:
-                self.b.boardcast(str(count))
+                self.b.broadcast(str(count))
                 count += 1
                 time.sleep(1)
 
@@ -162,14 +162,12 @@ if __name__ == "__main__":
             print bcast.get_addrs()
 
     if sys.argv[1] == "client":
+        bcast = BroadCast()
         s = socket.socket()
         s.connect(local_test_addr)
+        bcast.add_addr(("1.2.3.4", 1234), s)
         while True:
-            data = s.recv(1500)
-            if not data:
-                print "close connection"
-                s.close()
-            print data
+            print bcast.read()
 
     if sys.argv[1] == "client2":
         s = socket.socket()
@@ -181,6 +179,9 @@ if __name__ == "__main__":
     if sys.argv[1] == "client3":
         s = socket.socket()
         s.connect(local_test_addr)
+        bcast = BroadCast()
+        fake_addr = ("1.2.3.4", 1234)
+        bcast.add_addr(fake_addr, s)
         for i in range(10):
+            bcast.send(fake_addr,str(i))
             time.sleep(1)
-            s.send("client message" + str(i))

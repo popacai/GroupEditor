@@ -11,7 +11,7 @@ import time
 
 # Threading recv TCP
 global END_TCP_FLAG
-END_TCP_FLAG = "*"
+END_TCP_FLAG = "\n\r\n\r"
 
 class TRTCP(Thread):
     def __init__(self, sock, addr, output_pipe, signal_pipe):
@@ -176,7 +176,7 @@ if __name__ == "__main__":
         time.sleep(5)
 
     if sys.argv[1] == "client":
-        addr = ("localhost", 12222)
+        addr = ("localhost", 10003)
         s = socket.socket()
         s.connect(addr)
 
@@ -223,7 +223,7 @@ if __name__ == "__main__":
         input_pipes = []
         #server
         server = socket.socket()
-        server.bind(("localhost", 12222))
+        server.bind(("localhost", 10003))
         server.listen(10)
         number = 0
 

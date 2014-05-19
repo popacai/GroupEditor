@@ -37,7 +37,7 @@ class TRTCP(Thread):
         data = ""
         while True:
             try:
-                data += self.sock.recv(1)
+                data += self.sock.recv(1400)
                 if not data:
                     self.sock.close()
                     self.signal_pipe.write("socket_close:" + str(self.addr))

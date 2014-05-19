@@ -11,7 +11,8 @@ import time
 
 # Threading recv TCP
 global END_TCP_FLAG
-END_TCP_FLAG = "\n\r\n\r"
+END_TCP_FLAG = "*"
+
 class TRTCP(Thread):
     def __init__(self, sock, addr, output_pipe, signal_pipe):
         Thread.__init__(self)
@@ -31,6 +32,8 @@ class TRTCP(Thread):
 
     def run(self):
         #self.sock.settimeout(5) # Don't wait too much time
+        global END_TCP_FLAG
+
         data = ""
         while True:
             try:
@@ -40,11 +43,8 @@ class TRTCP(Thread):
                     self.signal_pipe.write("socket_close:" + str(self.addr))
                     self.close()
                     # output_pipe message
-                pos = data.find(END_TCP_FLAG)
-                if (pos == -1):
-                    continue
-                data1 = data[:pos]
-                data = data[pos+len(END_TCP_FLAG):]
+
+                items = data.split(END_TCP_FLAG)
 
             except socket.timeout, e:
                 continue
@@ -54,12 +54,17 @@ class TRTCP(Thread):
                 self.close()
                 return
 
-            try:
-                self.output_pipe.write(data1)
-            except:
-                self.signal_pipe.write("output_pipe_err:" + str(self.addr))
-                self.close()
-                return
+            if len(items) == 1:
+                data = items[0]
+            else:
+                for item in items[:-1]:
+                    try:
+                        self.output_pipe.write(item)
+                    except:
+                        self.signal_pipe.write("output_pipe_err:" + str(self.addr))
+                        self.close()
+                        return
+                data = items[-1]
 
 # Threading send TCP
 class TSTCP(Thread):
@@ -78,6 +83,7 @@ class TSTCP(Thread):
         except:
             pass
     def run(self): 
+        global END_TCP_FLAG
         while True:
             try:
                 data = self.input_pipe.read()

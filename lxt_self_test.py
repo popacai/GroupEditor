@@ -23,6 +23,27 @@ class coop_recv_t(threading.Thread):
     def run(self):
         self._coop.recv_message()
 
+class execute_msg(threading.Thread):
+    def __init__(self, read_pipe, coop):
+        threading.Thread.__init__(self)
+        self._pipe = read_pipe
+        self._coop = coop
+    def run(self):
+        while True:
+            msg = self._pipe.read().split(':')
+            #print 'in execute_msg: ', msg
+            if msg[0] == 'quit':
+                break
+            elif msg[0] == 'insert':
+                self._coop.handle_insert(ord(msg[1]))
+            elif msg[0] == 'move':
+                self._coop.handle_cursor_move(int(msg[1]), int(msg[2]))
+            elif msg[0] == 'delete':
+                self._coop.handle_delete()
+            
+            coop._gui._draw()
+            coop._gui._refresh_cursors()
+
 
 
 
@@ -64,11 +85,13 @@ write_pipe = output_pipe
 gui.set_pipe(read_pipe)
 coop.set_pipe(write_pipe)
 
-recv_msg_t = recv_msg(read_pipe, write_pipe)
-recv_msg_t.start()
+#recv_msg_t = recv_msg(read_pipe, write_pipe)
+#recv_msg_t.start()
 
-coop_t = coop_recv_t(coop)
-coop_t.start()
+execute_msg_t = execute_msg(write_pipe, coop)
+execute_msg_t.start()
+#coop_t = coop_recv_t(coop)
+#coop_t.start()
 
 gui.main()
 

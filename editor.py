@@ -79,6 +79,8 @@ class EditorGUI(object):
         self._pipe = None
         self._cooperators = []
 
+        curses.curs_set(0)
+
     def set_pipe(self, pipe):
         self._pipe = pipe
 
@@ -367,15 +369,15 @@ class EditorGUI(object):
 
     def move_cursor(self, curr_row, curr_col, dest_row, dest_col, front_color, back_color):
         #curses.start_color()
-        #highest_line_num = len(self._buf.get_lines())
-        #gutter_width = max(3, len(str(highest_line_num))) + 1
-        #self._stdscr.addstr(curr_row, curr_col + gutter_width, self._buf.get_text(curr_row, curr_col), curses.color_pair(0)) #cancel previous cursor
+        highest_line_num = len(self._buf.get_lines())
+        gutter_width = max(3, len(str(highest_line_num))) + 1
+        self._stdscr.addstr(curr_row, curr_col + gutter_width, self._buf.get_text(curr_row, curr_col), curses.color_pair(0)) #cancel previous cursor
         #curses.init_pair(8, front_color, back_color)
         dest_row, dest_col = self._check_cursor(dest_row, dest_col)
         #self._stdscr.addstr(dest_row, dest_col + gutter_width, self._buf.get_text(dest_row, dest_col), curses.color_pair(8)) # add new cursor
         #self._stdscr.refresh()
         #print 'set: ', dest_row, dest_col
-        #self._stdscr.refresh()
+        self._stdscr.refresh()
 
         return (dest_row, dest_col)
 
@@ -453,15 +455,15 @@ class EditorGUI(object):
             self._col = min(num_cols - 1, max(0, self._col))
 
             #self._draw()
-            self._draw()
-            self._refresh_cursors()
+            #self._draw()
+            #self._refresh_cursors()
             #self._stdscr.refresh()
             #print 'main'
             self._message = ''
 
         # out of while, close the curses window 
         curses.nocbreak()
-        stdscr.keypad(0)
+        self._stdscr.keypad(0)
         curses.echo()
         curses.endwin()
 

@@ -1,6 +1,10 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
+'''
+CAST Header add and remove
+'''
+
 from threading import Thread
 from BroadCast import BroadCast
 from PIPE import PIPE

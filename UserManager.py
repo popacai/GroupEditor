@@ -7,20 +7,6 @@ from PIPE import PIPE
 import socket
 import time
 import threading
-
-'''
-has the broadcast
-addr, UID
-
-leader:
-    detect_new_user() # if a new user -> view change
-    #other people. don't do it
-
-follower:
-        ignore_new_user()
-    detect_quit_user() #send message to leader
-
-'''
     
 class UserManager():
     def __init__(self, broadcast ,addr, UID):
@@ -37,6 +23,8 @@ class UserManager():
         self.t_ll.setDaemon(True)
         self.t_ll.start()
 
+        self.view_id = 0
+
         time.sleep(1)
         sock = self.t_ll.connect(self.local_addr, self.UID)
         u = self.t_ll.new_user()
@@ -51,7 +39,6 @@ class UserManager():
         return self.temp_user_list # for update
 
     def quit_user(self):
-
         while True:
             data = self.b.get_signal_message()
             items = data.split(',')
@@ -62,13 +49,18 @@ class UserManager():
 
             if UID in self.user_list:
                 return UID
+
     def get_user_list(self):
-        return self.user_list.keys()
+        return self.user_list.keys(), self.view_id
 
     def test_b_read(self):
         return self.b.read()
 
-    def update_user_list(self, users):
+    def update_user_list(self, users, view_id):
+        if (self.view_id > view_id):
+            print 'old view id'
+            return 
+        self.view_id = view_id
         for user in users:
             if user not in self.user_list:
                 if user not in self.temp_user_list:
@@ -184,6 +176,7 @@ if __name__ == "__main__":
         t_read_b.setDaemon(True)
         t_read_b.start()
 
+        view_id = 0
         while True:
             users = um.new_user()
             print "before update", um.user_list.keys()
@@ -192,7 +185,8 @@ if __name__ == "__main__":
                 del users["222".ljust(10)]
             except:
                 print 'not 222'
-            um.update_user_list(users)
+            view_id += 1
+            um.update_user_list(users, view_id)
 
             if len(users) > 3:
                 print 'signal'

@@ -176,7 +176,7 @@ if __name__ == "__main__":
         time.sleep(5)
 
     if sys.argv[1] == "client":
-        addr = ("localhost", 10003)
+        addr = ("localhost", 12222)
         s = socket.socket()
         s.connect(addr)
 
@@ -223,7 +223,7 @@ if __name__ == "__main__":
         input_pipes = []
         #server
         server = socket.socket()
-        server.bind(("localhost", 10003))
+        server.bind(("localhost", 12222))
         server.listen(10)
         number = 0
 

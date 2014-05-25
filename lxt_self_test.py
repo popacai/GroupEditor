@@ -1,3 +1,10 @@
+'''
+How to play:
+first, start a TTCP server, with 'python TTCP.py server_c'
+second, start several editors, with 'python lxt_self_test.py'
+then, you will see the operations in several editors are identical
+'''
+
 from editor import EditorGUI
 from cooperator import cooperator
 import curses, time, thread, threading

@@ -73,6 +73,8 @@ class BroadCast():
         input_pipe.write(message)
         return input_pipe
 
+    def sendall(self,message):
+        return self.broadcast(message)
     def broadcast(self, message): #return how many message has been sent
         for addr in self.input_pipes:
             pipe = self.input_pipes[addr]
@@ -99,7 +101,7 @@ if __name__ == "__main__":
         def run(self):
             count = 0
             while True:
-                self.b.broadcast(str(count))
+                self.b.broadcast("GBCAST" + str(count))
                 count += 1
                 time.sleep(1)
 
@@ -121,7 +123,7 @@ if __name__ == "__main__":
             print self.func(self.argv1, self.argv2)
  
 
-    local_test_addr = ("localhost", 10003)
+    local_test_addr = ("localhost", 12222)
 
     if sys.argv[1] == "server":
         def delay_remove(bcast, addr):

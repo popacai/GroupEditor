@@ -25,7 +25,7 @@ class TRTCP(Thread):
         try:
             self.sock.shutdown(socket.SHUT_RDWR)
             self.sock.close()
-            self.signal_pipe.write("addr closed " + str(self.addr))
+            self.signal_pipe.write("addr closed," + str(self.addr))
         except:
             pass
 
@@ -40,7 +40,7 @@ class TRTCP(Thread):
                 data += self.sock.recv(1400)
                 if not data:
                     self.sock.close()
-                    self.signal_pipe.write("socket_close:" + str(self.addr))
+                    self.signal_pipe.write("socket_close," + str(self.addr))
                     self.close()
                     # output_pipe message
 
@@ -49,7 +49,7 @@ class TRTCP(Thread):
             except socket.timeout, e:
                 continue
             except:
-                self.signal_pipe.write("socket_err:" + str(self.addr))
+                self.signal_pipe.write("socket_err," + str(self.addr))
                 self.sock.close()
                 self.close()
                 return
@@ -61,7 +61,7 @@ class TRTCP(Thread):
                     try:
                         self.output_pipe.write(item)
                     except:
-                        self.signal_pipe.write("output_pipe_err:" + str(self.addr))
+                        self.signal_pipe.write("output_pipe_err," + str(self.addr))
                         self.close()
                         return
                 data = items[-1]
@@ -79,7 +79,7 @@ class TSTCP(Thread):
         try:
             self.sock.close()
             self.input_pipe.close()
-            self.signal_pipe.write("addr closed " + str(self.addr))
+            self.signal_pipe.write("addr closed," + str(self.addr))
         except:
             pass
     def run(self): 
@@ -89,14 +89,14 @@ class TSTCP(Thread):
                 data = self.input_pipe.read()
             except:
                 #self.input_pipe break;
-                self.signal_pipe.write("input_pipe_err:" + str(self.addr))
+                self.signal_pipe.write("input_pipe_err," + str(self.addr))
                 self.sock.close()
                 break
 
             try:
                 self.sock.sendall(data + END_TCP_FLAG)
             except:
-                self.signal_pipe.write("socket_err:" + str(self.addr))
+                self.signal_pipe.write("socket_err," + str(self.addr))
                 self.sock.close()
                 #self.sock break
                 break
@@ -176,7 +176,7 @@ if __name__ == "__main__":
         time.sleep(5)
 
     if sys.argv[1] == "client":
-        addr = ("localhost", 10003)
+        addr = ("localhost", 12222)
         s = socket.socket()
         s.connect(addr)
 
@@ -223,7 +223,7 @@ if __name__ == "__main__":
         input_pipes = []
         #server
         server = socket.socket()
-        server.bind(("localhost", 10003))
+        server.bind(("localhost", 12222))
         server.listen(10)
         number = 0
 

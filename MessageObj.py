@@ -8,7 +8,7 @@ class MessageObj(object):
         super(MessageObj, self).__init__()
         self.sender = sender
         self.content = content
-        self.mid = self.oid = oid
+        self.mid = sender + '::' + str(oid)
         self.delivered = False
 
     def deliver(self):
@@ -29,8 +29,8 @@ class MessageObj(object):
     def generateKey(self):
         return str(self.oid) + self.sender
 
-    def serializedString(self):
-        return self.sender + '::' + self.content + '::' + str(self.mid)
+    def __str__(self):
+        return self.sender + '::' + self.content + '::' + self.mid
 
 if __name__ == '__main__':
     pass

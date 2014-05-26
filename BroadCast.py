@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-#BoardCast class
+#raw BoardCast class
 
 from MTCP import MTCP
 from PIPE import PIPE

@@ -1,7 +1,14 @@
+'''
+How to play:
+first, start a TTCP server, with 'python TTCP.py server_c'
+second, start several editors, with 'python lxt_self_test.py'
+then, you will see the operations in several editors are identical
+'''
+
 from editor import EditorGUI
 from cooperator import cooperator
 import curses, time, thread, threading
-from pipe import PIPE
+from PIPE import PIPE
 from TTCP import *
 import socket
 
@@ -54,7 +61,7 @@ gui = EditorGUI(stdscr, '')
 coop = cooperator(gui, 0, 7)
 gui._cooperators.append(coop)
 
-addr = ("localhost", 10003)
+addr = ("localhost", 12222)
 s = socket.socket()
 s.connect(addr)
 

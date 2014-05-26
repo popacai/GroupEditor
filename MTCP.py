@@ -19,6 +19,7 @@ class MTCP():
         del self.tr_list[addr]
         del self.ts_list[addr]
 
+
     def new_connect(self, sock, addr, input_pipe):
         #This will create connection with addr
         #It will auto fetch data from input_pipe

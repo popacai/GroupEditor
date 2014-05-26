@@ -9,33 +9,20 @@ seq
 message
 '''
 import json
-def decode_gb(obj):
-    gbm = GBMessage()
-    return gbm.__decode__(obj)
-
-def decode_vm(obj):
-    gbm = ViewMessage()
-    return gbm.__decode__(obj)
-
-def decode_uv(obj):
-    gbm = UserView()
-    return gbm.__decode__(obj)
-
-def encode(obj):
-    return obj.__encode__()
 
 class GBMessage(): 
-    def __init__(self, view_id = 0, user_id = 0, seq = 0, message = ""):
+    def __init__(self, view_id = 0, action = "", user_id = "", seq = 0, message = ""):
         self.view_id = view_id
         self.user_id = user_id
         self.seq = seq
+        self.action = action
         self.message = message
     def __encode__(self):
-        #m = "%d,%s,%d,%s" % (self.view_id, self.user_id, self.seq, self.message)
         m = {}
         m["view_id"] = self.view_id
         m["user_id"] = self.user_id
         m["seq"] = self.seq
+        m["action"] = self.action
         m["message"] = self.message
         json_string = json.dumps(m)
         return json_string
@@ -46,6 +33,7 @@ class GBMessage():
         self.view_id = g["view_id"]
         self.user_id = g["user_id"]
         self.seq = g["seq"]
+        self.action = g["action"]
         self.message = g["message"]
         return self
 '''
@@ -62,31 +50,40 @@ class UserView():
         self.info = ""
     def __encode__(self):
         m = {}
-        m["UID"] = UID
-        m["user_list"] = user_list
-        m["leader"] = leader
-        m["info"] = info
+        m["UID"] = self.UID
+        m["user_list"] = self.user_list
+        m["leader"] = self.leader
+        m["info"] = self.info
         s = json.dumps(m)
         return s
+    def __str__(self):
+        return self.__encode__()
     def __decode__(self, message):
-        s = json.dumps(message)
+        s = json.loads(message)
         self.UID = s["UID"]
         self.user_list = s["user_list"]
         self.leader = s["leader"]
         self.info = s["info"]
         return self
 
-class ViewMessage(): # !, #, | is used
+class ViewMessage(): 
     def __init__(self, view_id = 0):
         self.view_id = view_id
         self.users_views = {}
 
+    def add_user_view(self, user_view):
+        self.users_views[user_view.UID] = user_view
+
+    def __str__(self):
+        self.__encode__()
+
     def __encode__(self):
         m = {}
         m["view_id"] = self.view_id
+
         temp = []
-        for i in users_views:
-            temp.append(encode(i))
+        for key in self.users_views:
+            temp.append(uv_encode(self.users_views[key]))
             
         m["users_views"] = temp
 
@@ -98,34 +95,77 @@ class ViewMessage(): # !, #, | is used
         self.view_id = g["view_id"]
         temp = g["users_views"]
         self.users_views = {}
+
         for i in temp:
-            self.users_views.append(decode_uv(i))
+            x = uv_decode(i)
+            self.users_views[x.UID] = x
+
         #self.users_views = g["users_views"]
         return self
 
+def gm_encode(obj):
+    return str(obj)
+def gm_decode(obj):
+    return GBMessage().__decode__(obj)
+
+def uv_encode(obj):
+    return obj.__encode__()
+def uv_decode(obj):
+    return UserView().__decode__(obj)
+
+def vm_encode(obj):
+    return obj.__encode__()
+def vm_decode(obj):
+    return ViewMessage().__decode__(obj)
 
 if __name__ == "__main__":
-    view_m = ViewMessage()
-    view_m.view_id = 10
-    view_m.add_UID("321", ["3", '2', '1'], '1', "iajdsoaijsdoipajpjxcoijviopzxjvipjzvipozx")
-    view_m.add_UID("123", ["a", 'b', 'c'], '1', "ajdofasjpiasjfpaisdjiofjadspdfijasp")
+    vm = ViewMessage()
 
-    x = encode(view_m)
-    print x
+    vm.view_id = 1
 
-    c = decode_vm(x)
-    print c.view_id
+    for i in range(5):
+        a = UserView()
+        a.UID = "tao" + str(i)
+        a.user_list = ["123", "124", "125"]
+        a.leader = "123"
+        a.info = "omaodijfasdjpoiajsdpfjasdifdsaipojfdpiasfa"
+        vm.add_user_view(a)
+
+    msg = vm_encode(vm)
+    print msg
 
 
+    v = vm_decode(msg)
+    print v.view_id
+    print v.users_views
     
+
+
+
+'''
+    a = UserView()
+    a.UID = "tao"
+    a.user_list = ["123", "124", "125"]
+    a.leader = "123"
+    a.info = "omaodijfasdjpoiajsdpfjasdifdsaipojfdpiasfa"
+    msg = uv_encode(a)
+    print msg
+
+    u = uv_decode(msg)
+    print u.UID
+    print u.user_list[0] == a.user_list[0]
     '''
+    
+'''
     a = GBMessage()
     a.view_id = 10
     a.user_id = "tao123"
+    a.action = "prepare"
     a.seq = 20
     a.message = "223 is too hard"
-    msg = encode(a)
+    msg = gm_encode(a)
+
     print msg
-    b = decode(msg)
-    print b.view_id, b.user_id, b.seq, b.message
+    b = gm_decode(msg)
+    print b.view_id, b.user_id, b.action,  b.seq, b.message
     '''

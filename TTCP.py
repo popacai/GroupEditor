@@ -223,7 +223,7 @@ if __name__ == "__main__":
         input_pipes = []
         #server
         server = socket.socket()
-        server.bind(("localhost", 12222))
+        server.bind(("0.0.0.0", 12222))
         server.listen(10)
         number = 0
 

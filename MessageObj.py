@@ -4,12 +4,18 @@
 
 class MessageObj(object):
     """docstring for MessageObj"""
-    def __init__(self, sender, content, oid):
+    def __init__(self, sender, content, oid, bType):
         super(MessageObj, self).__init__()
+        self.type = bType
         self.sender = sender
         self.content = content
-        self.mid = sender + '::' + str(oid)
+        self.oid = oid
+        self.mid = sender + '_' + str(oid)
         self.delivered = False
+
+    def __init__(self, msg):
+        super(MessageObj, self).__init__()
+
 
     def deliver(self):
         self.delivered = True

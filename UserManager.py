@@ -28,15 +28,31 @@ class UserManager():
         time.sleep(1)
         sock = self.t_ll.connect(self.local_addr, self.UID)
         u = self.t_ll.new_user()
+
+        #self.view_id += 1
+        #self.update_user_list(u, self.view_id)
         if u == self.UID:
-            self.user_list[u] = sock
+            print 'succeed to connect itself'
+            pass
+            #self.temp_user_list[u] = sock
         else:
             print 'error to add self'
+
+    def add_user(self, addr, remote_uid):
+        s = cast_connect(addr, self.UID)
+        if s == None:
+            print "unable to connect", addr
+            return None
+        
+        self.temp_user_list[remote_uid] = s
+        self.b.add_addr(remote_uid, s)
+        print "temp" , self.temp_user_list
+        return s
 
     def new_user(self):
         uid = self.t_ll.new_user()
         self.b.add_addr(uid, self.temp_user_list[uid])
-        return self.temp_user_list # for update
+        return uid
 
     def quit_user(self):
         while True:
@@ -60,6 +76,7 @@ class UserManager():
         if (self.view_id > view_id):
             print 'old view id'
             return 
+
         self.view_id = view_id
         for user in users:
             if user not in self.user_list:
@@ -70,8 +87,22 @@ class UserManager():
 
         for user in self.user_list:
             if user not in users:
+                print 'remove', user, "in the user list"
                 del self.user_list[user]
                 self.b.remove_addr(user)
+
+
+def cast_connect(addr, uid):
+    s = socket.socket()
+    try:
+        uid = uid.ljust(10)
+        s.connect(addr)
+        s.sendall(uid)
+    except:
+        print 'connect error'
+        return None
+    return s
+
 
 
 class LocalListener(Thread):

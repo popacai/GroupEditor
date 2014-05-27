@@ -61,7 +61,7 @@ gui = EditorGUI(stdscr, '')
 coop = cooperator(gui, 0, 7)
 gui._cooperators.append(coop)
 
-addr = ("localhost", 12222)
+addr = ("192.168.1.121", 12222)
 s = socket.socket()
 s.connect(addr)
 

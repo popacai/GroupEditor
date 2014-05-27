@@ -66,8 +66,12 @@ class UserManager():
             if UID in self.user_list:
                 return UID
 
+    #Yan
+    def fetch_user_list(self):
+        return self.user_list.keys()
+
     def get_user_list(self):
-        return self.user_list.keys(), self.view_id
+        return self.user_list.keys()[:], self.view_id
 
     def test_b_read(self):
         return self.b.read()

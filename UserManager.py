@@ -67,7 +67,7 @@ class UserManager():
                 return UID
 
     #Yan
-    def get_updated(self):
+    def fetch_user_list(self):
         return self.user_list.keys()
 
     def get_user_list(self):

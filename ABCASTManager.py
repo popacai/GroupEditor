@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 from PIPE import PIPE
-from CASTSelector import CASTSelector
+from CASTSelecter import CASTSelecter
 from Heap import Heap
 import threading
 from MessageObj import MessageObj
@@ -24,6 +24,7 @@ class ABCASTManager(object):
         self.inputPipe = PIPE()
         self.outputPipe = PIPE()
         self.responseReceiver = {}
+        self.clientList = []
         self.clientManager = clientManager
         self.processQueue = Heap()
         self.heapMutex = threading.Lock()
@@ -46,10 +47,21 @@ class ABCASTManager(object):
     def quit(self):
         pass
 
+    #for CT
     def block(self):
         pass
 
+    def waitAllDone(self):
+        pass
+
     def resume(self):
+        pass
+
+    def addUser(self, userId):
+        #call UserManager.get_user_list()
+        self.clientList = self.clientManager.fetch_user_list()
+
+    def removeUser(self, userId):
         pass
 
     def getGroupStatus(self):
@@ -60,29 +72,29 @@ class ABCASTManager(object):
 
     #block thread
     def _startReceiveMessage(self):
-        while True:
-            msg = self.castSelector.recvCB()
-            msgObj = MessageObj(msg)
+        pass
+        # while True:
+        #     msg = self.castSelector.recvCB()
+        #     msgObj = MessageObj(msg)
 
-            #selector
-            #for A::
+        #     #selector
+        #     #for A::
 
 
-            #for P::
-            if (sender + oid) in self.responseReceiver:
-                msgObj, cnt = self.responseReceiver[sender + oid]
-                #compare to replace
-                if cnt == len(self.clientList) + 1:
-                    #send F msg
-                    del self.responseReceiver[sender + oid]
-            else:
+        #     #for P::
+        #     if (sender + oid) in self.responseReceiver:
+        #         msgObj, cnt = self.responseReceiver[sender + oid]
+        #         #compare to replace
+        #         if cnt == len(self.clientList) + 1:
+        #             #send F msg
+        #             del self.responseReceiver[sender + oid]
+        #     else:
 
-                if :
-                    pass
-                self.responseReceiver[sender + oid] = (msgObj, 
+        #         if :
+        #             pass
+        #         self.responseReceiver[sender + oid] = (msgObj, 
 
-            #for F::
-
+        #     #for F::
 
     #block thread
     def _startSendBroadCast(self):

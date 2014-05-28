@@ -16,6 +16,8 @@ class UserManager():
 
         self.local_addr = addr
 
+        self.lock = threading.Lock()
+
         self.temp_user_list = {}
         self.user_list = {}
 
@@ -81,6 +83,7 @@ class UserManager():
             print 'old view id'
             return 
 
+        self.lock.acquire()
         self.view_id = view_id
         for user in users:
             if user not in self.user_list:
@@ -94,7 +97,7 @@ class UserManager():
                 print 'remove', user, "in the user list"
                 del self.user_list[user]
                 self.b.remove_addr(user)
-
+        self.lock.release()
 
 def cast_connect(addr, uid):
     s = socket.socket()

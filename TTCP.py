@@ -7,6 +7,7 @@ import socket
 from threading import Thread
 from PIPE import PIPE
 import threading
+import thread
 import time
 
 # Threading recv TCP
@@ -28,6 +29,7 @@ class TRTCP(Thread):
             self.signal_pipe.write("addr closed," + str(self.addr))
         except:
             pass
+        thread.exit()
 
 
     def run(self):
@@ -82,6 +84,7 @@ class TSTCP(Thread):
             self.signal_pipe.write("addr closed," + str(self.addr))
         except:
             pass
+        thread.close()
     def run(self): 
         global END_TCP_FLAG
         while True:

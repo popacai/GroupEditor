@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from sys import argv
 import curses
 import os
-from PIPE import PIPE
+from pipe import PIPE
 
 
 class Buffer(object):
@@ -57,9 +57,11 @@ class Buffer(object):
 
 class EditorGUI(object):
 
-    def __init__(self, stdscr, filename):
+    def __init__(self, stdscr, username, filename):
         """Create the GUI with curses screen and optional filename to load."""
         self._stdscr = stdscr
+        self._COLOR_NUM = 7
+        self._username = username
 
         # if filename already exists, try to load from it
         text = ''
@@ -257,8 +259,11 @@ class EditorGUI(object):
             #print 'refresh'
             row = coop._row
             col = coop._col
-            curses.init_pair(8, coop._front_color, coop._back_color)
-            self._stdscr.addstr(row, col + gutter_width, self._buf.get_text(row, col), curses.color_pair(8))
+            #curses.init_pair(8, 3, 5)
+            #self._stdscr.addstr(row, col + gutter_width, self._buf.get_text(row, col), curses.color_pair(coop._id / self._COLOR_NUM))
+            #print 'refresh'
+            #print coop._id % self._COLOR_NUM
+            self._stdscr.addstr(row, col + gutter_width, self._buf.get_text(row, col), curses.color_pair(coop._id % self._COLOR_NUM))
             self._stdscr.refresh()
 
     def _check_cursor(self, row, col):
@@ -276,29 +281,29 @@ class EditorGUI(object):
         """Handle a keypress in normal mode."""
         if char == ord('q'): # quit
             self._will_exit = True
-            self._pipe.write('quit')
+            self._pipe.write(self._username + '__quit')
         elif char == ord('j'): # down
-            self._pipe.write('move:1:0')
+            self._pipe.write(self._username + '__move__1__0')
             #self._row += 1
         elif char == ord('k'): # up 
-            self._pipe.write('move:-1:0')
+            self._pipe.write(self._username + '__move__-1__0')
             #self._row -= 1
         elif char == ord('h'): # left
-            self._pipe.write('move:0:-1')
+            self._pipe.write(self._username + '__move__0__-1')
             #self._col -= 1
         elif char == ord('l'): # right
-            self._pipe.write('move:0:1')
+            self._pipe.write(self._username + '__move__0__1')
             #self._col += 1
 
         elif char == ord('x'): # delete a character
-            self._pipe.write('delete')
+            self._pipe.write(self._username + '__delete')
             #self._buf.set_text(self._row, self._col, self._row,
                                 #self._col + 1, '')
         elif char == ord('i'): # enter insert mode
             self._mode = "insert"
         elif char == ord('a'): # enter insert mode after cursor
             self._mode = "insert"
-            self._pipe.write('move:0:1')
+            self._pipe.write(self.username + '__move__0__1')
             #self._col += 1
             """ 
         elif char == ord('o'): # insert line after current
@@ -331,11 +336,11 @@ class EditorGUI(object):
         if char == 27:
             # leaving insert mode moves cursor left
             if self._mode == 'insert':
-                self._pipe.write('move:0:-1')
+                self._pipe.write(self._username + '__move__0__-1')
                 #self._col -= 1
             self._mode = "normal"
         elif char == 127: # backspace
-            self._pipe.write('insert:' + chr(char))
+            self._pipe.write(self._username + '__insert__' + chr(char))
             """ 
             if self._col == 0 and self._row == 0:
                 pass # no effect
@@ -354,7 +359,7 @@ class EditorGUI(object):
                 self._col -= 1
             """ 
         else:
-            self._pipe.write('insert:'+chr(char))
+            self._pipe.write(self._username + '__insert__'+chr(char))
         """ 
             self._message = ('inserted {} at row {} col {}'
                              .format(char, self._row, self._col))
@@ -367,7 +372,7 @@ class EditorGUI(object):
                 self._col += 1
         """ 
 
-    def move_cursor(self, curr_row, curr_col, dest_row, dest_col, front_color, back_color):
+    def move_cursor(self, curr_row, curr_col, dest_row, dest_col):
         #curses.start_color()
         highest_line_num = len(self._buf.get_lines())
         gutter_width = max(3, len(str(highest_line_num))) + 1

@@ -37,24 +37,72 @@ class execute_msg(threading.Thread):
             msg = self._pipe.read().split('__')
             if msg[0] not in coops:
                 # add new cooperators
+                #print '???'
                 identifer = len(self._coops) + 1
                 new_coop = cooperator(self._gui, identifer)
                 self._coops[msg[0]] = new_coop
                 gui._cooperators.append(new_coop)
+                self._gui._pipe.write(self._gui._username + '__exits')
 
             coop = self._coops[msg[0]]
             #print 'in execute_msg: ', msg
             if msg[1] == 'quit':
                 break
             elif msg[1] == 'insert':
-                coop.handle_insert(ord(msg[2]))
+                ori_row, ori_col = coop.get_para()
+                if coop.handle_insert(ord(msg[2])):
+                    #if msg[2] == chr(127):
+                        #print 'update'
+                        #TODO what the fuck???
+                    self.update_cursors(ori_row, ori_col, msg)
+
             elif msg[1] == 'move':
                 coop.handle_cursor_move(int(msg[2]), int(msg[3]))
             elif msg[1] == 'delete':
+                ori_row, ori_col = coop.get_para()
                 coop.handle_delete()
+                self.update_cursors(ori_row, ori_col, msg)
+                #print '???'
             
             coop._gui._draw()
             coop._gui._refresh_cursors()
+
+    def update_cursors(self, ori_row, ori_col, msg):
+        if msg[1] == 'insert' and msg[2] != '\n' and msg[2] != chr(127):
+            for name, coop in self._coops.iteritems():
+                #print '!!!'
+                if name != msg[0]:
+                    #print '???'
+                    coop_row, coop_col = coop.get_para()
+                    if coop_row == ori_row and coop_col >= ori_row:
+                        coop.handle_cursor_move(0,1)
+        elif msg[1] == 'insert' and msg[2] == '\n':
+            for name, coop in self._coops.iteritems():
+                if name != msg[0]:
+                    coop_row, coop_col = coop.get_para()
+                    if coop_row > ori_row:
+                        coop.handle_cursor_move(1,0)
+                    elif coop_row == ori_row:
+                        coop.handle_cursor_move(1, 0 - len(self._gui._buf.get_lines()[ori_row]))
+            
+        elif (msg[1] == 'delete' or (msg[1] == 'insert' and msg[2] == chr(127))) and ori_col > 0:
+            #print '!!!'
+            for name, coop in self._coops.iteritems():
+                if name != msg[0]:
+                    coop_row, coop_col = coop.get_para()
+                    #print '!!!'
+                    if coop_row == ori_row and coop_col >= ori_col:
+                        coop.handle_cursor_move(0, -1)
+
+        elif (msg[1] == 'delete' or (msg[1] == 'insert' and msg[2] == chr(127))) and ori_col == 0:
+            #print '!!!'
+            for name, coop in self._coops.iteritems():
+                if name != msg[0]:
+                    coop_row, coop_col = coop.get_para()
+                    #print '???'
+                    if coop_row > ori_row:
+                        coop.handle_cursor_move(-1, 0)
+
 
 
 def init_colors():

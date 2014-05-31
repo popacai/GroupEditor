@@ -85,6 +85,7 @@ class EditorGUI(object):
 
     def set_pipe(self, pipe):
         self._pipe = pipe
+        self._pipe.write(self._username + '__join') # indicate that i am coming
 
     def add_cooperator(self, coop):
         self._cooperators.append(coop)
@@ -303,7 +304,7 @@ class EditorGUI(object):
             self._mode = "insert"
         elif char == ord('a'): # enter insert mode after cursor
             self._mode = "insert"
-            self._pipe.write(self.username + '__move__0__1')
+            self._pipe.write(self._username + '__move__0__1')
             #self._col += 1
             """ 
         elif char == ord('o'): # insert line after current
@@ -388,8 +389,12 @@ class EditorGUI(object):
 
     def insert(self, char, row, col):
         #print 'in insert: ', char
+        if len(self._buf.get_lines()[row]) > (self._stdscr.getmaxyx()[1] - 10) and char != ord('\n'):
+            #print 'rrrrrrrrrow: ', row
+            return False
         row, col = self._check_cursor(row, col)
         self._buf.set_text(row, col, row, col, chr(char))
+        return True 
         #self._draw()
         # TODO refresh all cursors
 

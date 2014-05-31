@@ -170,23 +170,27 @@ class ABCASTManager(object):
 class FakeCASTSelecter(object):
     def __init__(self, addr):
         # self.pipes = {}
+        self.adapter = {'a': PIPE(), 'b': PIPE(), 'c': PIPE()}
         self.addr = addr
 
     def sendCB(self, data, addr=None):
         class Thread_sleep_random(threading.Thread):
-            def __init__(self, method, data):
+            def __init__(self, method, pip):
                 threading.Thread.__init__(self)
                 self.method = method
-                self.data = data
+                self.pip = pip
 
             def run(self):
                 time.sleep(random.random())
-                self.method(self.data)
+                self.method(self.pip.read())
 
         if addr is None:
-            t1 = Thread_sleep_random(self.pipes['a'].write, data)
-            t2 = Thread_sleep_random(self.pipes['b'].write, data)
-            t3 = Thread_sleep_random(self.pipes['c'].write, data)
+            self.adapter['a'].write(data)
+            self.adapter['b'].write(data)
+            self.adapter['c'].write(data)
+            t1 = Thread_sleep_random(self.pipes['a'].write, self.adapter['a'])
+            t2 = Thread_sleep_random(self.pipes['b'].write, self.adapter['b'])
+            t3 = Thread_sleep_random(self.pipes['c'].write, self.adapter['c'])
             t1.start()
             t2.start()
             t3.start()
@@ -241,9 +245,9 @@ if __name__ == '__main__':
     abcB.start()
     abcC.start()
 
-    ta = CustomThread(writeA, [abcA, 4])
-    tb = CustomThread(writeB, [abcB, 3])
-    tc = CustomThread(writeC, [abcC, 4])
+    ta = CustomThread(writeA, [abcA, 500])
+    tb = CustomThread(writeB, [abcB, 500])
+    tc = CustomThread(writeC, [abcC, 500])
 
     ta.start()
     tb.start()
@@ -252,21 +256,33 @@ if __name__ == '__main__':
     # print abcA.read()
     # print abcB.read()
     # print abcC.read()
-    print ''
-    for x in xrange(0, 11):
-        print 'A_%d: %s' % (x, abcA.read())
 
-    print ''
+    for x in xrange(0, 1500):
+        am = abcA.read()
+        bm = abcB.read()
+        cm = abcC.read()
+        if not (am == bm and bm == cm):
+            print 'something went wrong'
+        if x % 100 == 0:
+            print '100 msg done'
 
-    for x in xrange(0, 11):
-        print 'B_%d: %s' % (x, abcB.read())
+    # for x in xrange(1,10):
+    #     pass
+    # print ''
+    # for x in xrange(0, 11):
+    #     print 'A_%d: %s' % (x, abcA.read())
 
-    print ''
+    # print ''
 
-    for x in xrange(0, 11):
-        print 'C_%d: %s' % (x, abcC.read())
+    # for x in xrange(0, 11):
+    #     print 'B_%d: %s' % (x, abcB.read())
 
-    print ''
+    # print ''
+
+    # for x in xrange(0, 11):
+    #     print 'C_%d: %s' % (x, abcC.read())
+
+    # print ''
 
     # selector = CASTSelecter(b, um)
     # manager = ABCASTManager()

@@ -147,19 +147,20 @@ class ABCASTManager(object):
 
 
 if __name__ == '__main__':
-    addr = ("127.0.0.1", 12222)
-    s = socket.socket()
-    s.connect(addr)
-    b = BroadCast()
-    b.add_addr(addr, s)
-    um = UserManager(b, addr, 'self')
+    pass
+    # ip_addr = "localhost"
+    # port = 10000 + 5
+    # localaddr = (ip_addr, port)
 
-    selector = CASTSelecter(b, um)
-    manager = ABCASTManager()
-    manager.start()
+    # b = BroadCast()
+    # um = UserManager(b, localaddr, user_id)
 
-    manager.write('haha')
-    manager.write('wiz')
-    print manager.read()
-    print manager.read()
+    # selector = CASTSelecter(b, um)
+    # manager = ABCASTManager()
+    # manager.start()
+
+    # manager.write('haha')
+    # manager.write('wiz')
+    # print manager.read()
+    # print manager.read()
 

@@ -22,6 +22,7 @@ from threading import Thread
 from UserManager import UserManager
 from BroadCast import BroadCast
 from CASTSelecter import CASTSelecter
+from ABCASTManager import ABCASTManager
 import sys
 import time
 
@@ -55,6 +56,15 @@ class Thread_recvGB(Thread):
         while True:
             print self.cast_s.recvGB()
 
+class Thread_recvCB(Thread):
+    def __init__(self, cast_s):
+        Thread.__init__(self)
+        self.cast_s = cast_s
+    def run(self):
+        while True:
+            print self.cast_s.recvCB()
+
+
 class read_pipe(Thread):
     def __init__(self, pipe):
         Thread.__init__(self)
@@ -63,7 +73,14 @@ class read_pipe(Thread):
         while True:
             print self.pipe.read()
 
-
+class read_from_abcast(Thread):
+    def __init__(self, pipe):
+        Thread.__init__(self)
+        self.ab = pipe
+    def run(self):
+        while True:
+            print 'start to read ab'
+            print self.ab.read()
 
 #20 members at most
 def main():
@@ -116,10 +133,26 @@ def main():
     t_gb_recv.start()
 
     print '====================================================='
+    #Init ABCASTManager
+
+    am = ABCASTManager(user_id, t_cast_s, um)
+    am.start()
+
+    #Init recvCB()
+    #t_cb_recv = Thread_recvCB(t_cast_s)
+    #t_cb_recv.setDaemon(True)
+    #t_cb_recv.start()
+    t_ab_reader = read_from_abcast(am)
+    t_ab_reader.setDaemon(True)
+    t_ab_reader.start()
+
     #message 
     while True:
         message = raw_input()
-        t_cast_s.sendGB(message)
+        if (message == ""):
+            continue
+        #t_cast_s.sendCB(message)
+        am.write(message)
         
     #Init abcast
 

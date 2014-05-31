@@ -6,6 +6,7 @@ from BroadCast import BroadCast
 from PIPE import PIPE
 import socket
 import time
+import json
 import threading
     
 class UserManager():
@@ -74,6 +75,15 @@ class UserManager():
 
     def get_user_list(self):
         return self.user_list.keys()[:], self.view_id
+
+    def to_json(self, l = None):
+        if l == None:
+            l = self.user_list.keys()
+        return json.dumps(l)
+
+    def to_list(self, message):
+        l = json.loads(message)
+        return l
 
     def test_b_read(self):
         return self.b.read()

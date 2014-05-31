@@ -92,7 +92,10 @@ def main():
     #message 
     while True:
         message = raw_input()
-        t_cast_s.sendGB(message)
+        if (message == "sync"):
+            gb_m.send_sync_request()
+        else:
+            t_cast_s.sendGB(message)
 
     #Init abcast
 

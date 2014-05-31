@@ -46,41 +46,97 @@ class GBCASTManager():
         print 'UID', UID
         pass
     
-    def send_sync_request(self):
-        pass
+    def send_sync_response(self, client):
+        #Send to all
+        gb = GBMessage()
+        gb.view_id = self.user_m.view_id
+        gb.user_id = self.UID
+        gb.action = "sync"
+        
+        print self.user_m.to_json()
+        gb.message = self.user_m.to_json()
 
-    def send_sync_user_list(self):
-        #return sync list
-        pass
+        str_message = str(gb)
+        self.cast_s.sendGB(str_message, client)
+
+
+    def send_sync_request(self):
+        gb = GBMessage()
+        gb.view_id = self.user_m.view_id
+        gb.user_id = self.UID
+        gb.action = "sync-req"
+        gb.message = ""
+
+        str_message = str(gb)
+        self.cast_s.sendGB(str_message)
 
     def send_fetch_all_data(self):
         pass
+
+    def notify_all(self):
+        self.cond.acquire()
+        self.cond.notify_all()
+        self.cond.release()
 
     def recv_gbcast(self):
         #recv gbcast
         str_message = self.cast_s.recvGB()
         print 'message', str_message
+        if len(str_message) < 1:
+            return
 
-        self.cond.acquire()
-        self.cond.notify_all()
-        self.cond.release()
 
         print "before message", self.user_m.get_user_list()
 
         gb = GBMessage().__decode__(str_message)
         #View ID is too old
-        if (gb.view_id < self.user_m.view_id):
-            print gb.view_id, self.user_m.view_id, ' view id is too old' 
-            return
 
+        print "action", gb.action
         if (gb.action == "kick"):
+            if (gb.view_id < self.user_m.view_id):
+                print gb.view_id, self.user_m.view_id, ' view id is too old' 
+                return
             print 'kick', gb.message , "*"
             if (gb.user_id in self.user_m.fetch_user_list()):
                 self.delete_user(gb.message)
 
         if (gb.action == "sync"):
+            self.lock_user_list.acquire()
+            #TODO: lock please
+            if (gb.view_id < self.user_m.view_id):
+                print gb.view_id, self.user_m.view_id, ' view id is too old' 
+                return
+            
+            new_l = self.user_m.to_list(gb.message)
+            old_l = self.user_m.fetch_user_list()
+
+            user_not_in_new = [user for user in old_l if user not in new_l]
+            for user in user_not_in_new:
+                self.send_kick_message(user)
+                self.delete_user(user)
+
+            self.user_m.update_user_list(new_l, gb.view_id)
+
+            user_not_in_local = [user for user in new_l if user not in self.user_m.fetch_user_list()]
+
+            for user in user_not_in_local:
+                self.send_kick_message(user)
+                self.delete_user(user)
+
+            #kick the new nodes. 
+            print 'after update', self.user_m.get_user_list()
+            self.lock_user_list.release()
+
+            #only kick the old nodes
+            #update
             pass
 
+        if (gb.action == "sync-req"):
+            self.send_sync_response(gb.user_id)
+            #send sync
+
+
+        self.notify_all()
         '''
         send condition event
         sync-request
@@ -96,10 +152,7 @@ class GBCASTManager():
             if (view_id) is equal
                 send all the data to that server
         '''
-        pass
-
-    def recv_signal(self):
-        user_to_kick = self.user_m.quit_user()
+    def send_kick_message(self, user_to_kick):
         kick_message = GBMessage()
 
         kick_message.view_id = self.user_m.view_id
@@ -110,13 +163,19 @@ class GBCASTManager():
         str_message = kick_message.__encode__()
 
         self.cast_s.sendGB(str_message)
+
+
+    def recv_signal(self):
+        user_to_kick = self.user_m.quit_user()
+
+        self.send_kick_message(user_to_kick)
         self.delete_user(user_to_kick)
         '''
         read signal from the signal_pipe 
         call remove user
         '''
     def delete_user(self, user_to_kick):
-        #self.lock_user_list.acquire()
+        self.lock_user_list.acquire()
         if user_to_kick in self.user_m.fetch_user_list():
             new_list = [user for user in self.user_m.fetch_user_list() if user != user_to_kick]
             self.user_m.update_user_list(new_list, self.user_m.view_id)
@@ -125,7 +184,7 @@ class GBCASTManager():
             #I don't check it.
             #Better to use update instead of this
             #self.user_m.b.remove_addr(user_to_kick)
-        #self.lock_user_list.release()
+        self.lock_user_list.release()
 
     def update_user_list(self):
         '''

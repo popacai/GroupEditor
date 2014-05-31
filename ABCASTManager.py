@@ -59,9 +59,11 @@ class ABCASTManager(object):
 
     def read(self):
         #parsed value
+        print 'r'
         return self.outputPipe.read()
 
     def write(self, message):
+        print 'm', message
         self.inputPipe.write(message)
 
     def quit(self):

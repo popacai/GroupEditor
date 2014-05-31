@@ -13,9 +13,15 @@ import json
 class GBMessage(): 
     def __init__(self, view_id = 0, action = "", user_id = "", seq = 0, message = ""):
         self.view_id = view_id
+
+        #
         self.user_id = user_id
         self.seq = seq
+
+        #
         self.action = action
+
+        #
         self.message = message
     def __encode__(self):
         m = {}

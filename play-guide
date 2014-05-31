@@ -1,0 +1,5 @@
+1. python TTCP.py server_c
+2. in the new terminal: python lxt_self_test.py argv1 argv2   
+   argv1 is your username, and argv2 is your filename
+3. if you want to exit, you can click ESC to go into the normal mode, and click w to save file, and q to exit the editor.
+

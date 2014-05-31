@@ -2,10 +2,9 @@
 import curses
 class cooperator:
 
-    def __init__(self, gui, front_color, back_color):
+    def __init__(self, gui, identifer):
         self._gui = gui
-        self._front_color = front_color
-        self._back_color = back_color
+        self._id = identifer
         self._row = 0
         self._col = 0
         self._pipe = None
@@ -16,27 +15,35 @@ class cooperator:
     def handle_insert(self, char):
 
         if char == ord('\n'): # return
-            self._gui.insert(char, self._row, self._col)
-            self._gui.move_cursor(self._row, self._col, self._row + 1, 0, self._front_color, self._back_color) 
-            self._row += 1
-            self._col = 0
-            self._gui._refresh_cursors()
+            if self._gui.insert(char, self._row, self._col):
+                self._gui.move_cursor(self._row, self._col, self._row + 1, 0) 
+                self._row += 1
+                self._col = 0
+                self._gui._refresh_cursors()
+                return True
+            else:
+                self._gui._refresh_cursors()
+                return False
 
         elif char == 127: #backspace
 
             if self._row == 0 and self._col == 0:
-                pass # no effect
+                return True # no effect
             else:
                 (dest_row, dest_col) = self._gui.backspace(self._row, self._col)
                 self._row = dest_row
                 self._col = dest_col
                 self._gui._refresh_cursors()
+                return True
         else: # normal input
-            self._gui.insert(char, self._row, self._col)
-            self.handle_cursor_move(0,1)
+            if self._gui.insert(char, self._row, self._col):
+                self.handle_cursor_move(0,1)
+                return True
+            else:
+                return False
 
     def handle_cursor_move(self, row_offset, col_offset):
-        self._row, self._col = self._gui.move_cursor(self._row, self._col, self._row + row_offset, self._col + col_offset, self._front_color, self._back_color)
+        self._row, self._col = self._gui.move_cursor(self._row, self._col, self._row + row_offset, self._col + col_offset)
         self._gui._refresh_cursors()
 
 
@@ -56,3 +63,5 @@ class cooperator:
                 self.handle_cursor_move(int(msg[1]), int(msg[2]))
             elif msg[0] == 'delete':
                 self.handle_delete()
+    def get_para(self):
+        return self._row, self._col

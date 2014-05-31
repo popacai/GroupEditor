@@ -30,7 +30,7 @@ class MessageObj(object):
             return True
         else:
             if self.mid == obj.mid:
-                return self.generateKey() < obj.generateKey()
+                return self.uniqueId() < obj.uniqueId()
             else:
                 return False
 

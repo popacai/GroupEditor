@@ -31,7 +31,7 @@ class ABCASTManager(object):
     def __init__(self, userId, castSelector, clientManager):
         super(ABCASTManager, self).__init__()
         self.clock = 0
-        # self.clockMutex = threading.Lock()
+        self.clockMutex = threading.Lock()
 
         self.userId = userId
         self.inputPipe = PIPE()
@@ -105,8 +105,11 @@ class ABCASTManager(object):
                 if msgObj.sender in self.clientList:
                     self.heapMutex.acquire()
                     self.processQueue.push(msgObj)
+                    self.clockMutex.acquire()
+                    clk = self.clock = max(self.clock, self.processQueue.maxObj.mid) + 1
+                    self.clockMutex.release()
                     self.heapMutex.release()
-                    obj = MessageObj(msgObj.sender, None, msgObj.oid, self.clock, 'P')
+                    obj = MessageObj(msgObj.sender, None, msgObj.oid, clk, 'P')
                     obj.replier = self.userId
                     self._sendMessageObjBroadCast(obj, msgObj.sender)
                 # self.clientListMutex.release()
@@ -157,8 +160,10 @@ class ABCASTManager(object):
     def _startSendBroadCast(self):
         while True:
             msg = self.inputPipe.read()
-            self.clock = self.clock + 1
+            self.clockMutex.acquire()
+            self.clock += 1
             msgObj = MessageObj(self.userId, msg, self.clock, self.clock, 'A')
+            self.clockMutex.release()
             self._sendMessageObjBroadCast(msgObj)
 
 
@@ -168,11 +173,23 @@ class FakeCASTSelecter(object):
         self.addr = addr
 
     def sendCB(self, data, addr=None):
-        time.sleep(random.randint(0, 2))
+        class Thread_sleep_random(threading.Thread):
+            def __init__(self, method, data):
+                threading.Thread.__init__(self)
+                self.method = method
+                self.data = data
+
+            def run(self):
+                time.sleep(random.random())
+                self.method(self.data)
+
         if addr is None:
-            self.pipes['a'].write(data)
-            self.pipes['b'].write(data)
-            self.pipes['c'].write(data)
+            t1 = Thread_sleep_random(self.pipes['a'].write, data)
+            t2 = Thread_sleep_random(self.pipes['b'].write, data)
+            t3 = Thread_sleep_random(self.pipes['c'].write, data)
+            t1.start()
+            t2.start()
+            t3.start()
         else:
             p = self.pipes[addr]
             p.write(data)
@@ -235,10 +252,10 @@ if __name__ == '__main__':
     # print abcA.read()
     # print abcB.read()
     # print abcC.read()
-
+    print ''
     for x in xrange(0, 11):
         print 'A_%d: %s' % (x, abcA.read())
-    
+
     print ''
 
     for x in xrange(0, 11):

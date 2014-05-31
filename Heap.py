@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
-from MessageObj import MessageObj
+# from MessageObj import MessageObj
 
 
 class Heap(object):
@@ -52,11 +52,16 @@ class Heap(object):
             return
         obj = self.dic[key]
         idx = self.objects.index(obj)
-        print idx
-        obj.mid = priority
+        obj.setPriority(priority)
+        # obj.mid = priority
         self._parseDown(idx)
-        if obj.mid > self.maxObj.mid:
+        if self.maxObj.compare(obj):
             self.maxObj = obj
+        # if obj.mid > self.maxObj.mid:
+        #     self.maxObj = obj
+
+    def getAllObjects(self):
+        pass
 
     def _parseDown(self, idx):
         size = len(self.objects)
@@ -89,22 +94,22 @@ class Heap(object):
             self.objects[idx] = obj
 
 if __name__ == '__main__':
-    h = Heap()
-    obj1 = MessageObj('a', 'hello', 1)
-    obj2 = MessageObj('b', 'hi', 2)
-    obj3 = MessageObj('a', 'haha', 3)
-    obj4 = MessageObj('c', 'hello', 4)
-    obj5 = MessageObj('b', 'yes', 5)
-    obj6 = MessageObj('d', 'hello', 6)
-    h.push(obj1)
-    h.push(obj2)
-    h.push(obj3)
-    h.push(obj4)
-    h.push(obj5)
-    h.push(obj6)
-    h.update(obj3.generateKey(), 7)
-    h.update(obj1.generateKey(), 6)
-    while not h.empty():
-        obj = h.pop()
-        print obj.serializedString()
-
+    pass
+    # h = Heap()
+    # obj1 = MessageObj('a', 'hello', 1)
+    # obj2 = MessageObj('b', 'hi', 2)
+    # obj3 = MessageObj('a', 'haha', 3)
+    # obj4 = MessageObj('c', 'hello', 4)
+    # obj5 = MessageObj('b', 'yes', 5)
+    # obj6 = MessageObj('d', 'hello', 6)
+    # h.push(obj1)
+    # h.push(obj2)
+    # h.push(obj3)
+    # h.push(obj4)
+    # h.push(obj5)
+    # h.push(obj6)
+    # h.update(obj3.generateKey(), 7)
+    # h.update(obj1.generateKey(), 6)
+    # while not h.empty():
+    #     obj = h.pop()
+    #     print obj.serializedString()

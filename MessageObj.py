@@ -14,25 +14,6 @@ class MessageObj(object):
         self.mid = mid
         self.delivered = False
 
-    def __init__(self, msg):
-        super(MessageObj, self).__init__()
-        msg_split = msg.split('::')
-
-        #critical::format hard cord
-        self.type = msg_split[0]
-        self.sender = msg_split[1].split('_')[0]
-        self.oid = msg_split[1].split('_')[1]
-        self.mid = msg_split[2]
-        if self.type == 'A':
-            self.content = ''.join(msg_split[3:])
-        else:
-            self.content = ''
-        if self.type == 'P':
-            self.replier = msg_split[3]
-        else:
-            self.replier = None
-        self.delivered = False
-
     def commit(self):
         self.delivered = True
 
@@ -40,7 +21,7 @@ class MessageObj(object):
         self.mid = mid
 
     def uniqueId(self):
-        return self.sender + str(self.oid)
+        return self.sender + '_' + str(self.oid)
 
     def smallerThan(self, obj):
         if obj is None:
@@ -71,6 +52,29 @@ class MessageObj(object):
     def setPriority(self, priority):
         self.updateMsgId(priority)
         self.commit()
+
+
+def fromStr(msg):
+    msg_split = msg.split('::')
+
+    #critical::format hard cord
+    newtype = msg_split[0]
+    newsender = msg_split[1].split('_')[0]
+    newoid = msg_split[1].split('_')[1]
+    newmid = int(msg_split[2])
+    newreplier = None
+    if newtype == 'A':
+        newcontent = ''.join(msg_split[3:])
+    else:
+        newcontent = ''
+    if newtype == 'P':
+        newreplier = msg_split[3]
+    else:
+        newreplier = None
+    newdelivered = False
+    obj = MessageObj(newsender, newcontent, newoid, newmid, newtype)
+    obj.replier = newreplier
+    return obj
 
 if __name__ == '__main__':
     pass

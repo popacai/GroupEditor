@@ -77,12 +77,14 @@ class Heap(object):
                     idx = idx * 2 + 1
                 else:
                     self.objects[idx] = obj
+                    break
             else:
                 if rc.compare(obj):
                     self.objects[idx] = rc
                     idx = idx * 2 + 2
                 else:
                     self.objects[idx] = obj
+                    break
         if idx * 2 + 1 == size - 1:
             c = self.objects[size - 1]
             if c.compare(obj):

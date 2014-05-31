@@ -54,6 +54,7 @@ class Thread_recvGB(Thread):
     def run(self):
         while True:
             print self.cast_s.recvGB()
+
 class read_pipe(Thread):
     def __init__(self, pipe):
         Thread.__init__(self)
@@ -61,7 +62,8 @@ class read_pipe(Thread):
     def run(self):
         while True:
             print self.pipe.read()
-     
+
+
 
 #20 members at most
 def main():
@@ -118,7 +120,7 @@ def main():
     while True:
         message = raw_input()
         t_cast_s.sendGB(message)
-
+        
     #Init abcast
 
 if __name__ == "__main__":

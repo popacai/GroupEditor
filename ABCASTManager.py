@@ -5,20 +5,25 @@ from CASTSelecter import CASTSelecter
 from Heap import Heap
 import threading
 from MessageObj import MessageObj
+from MessageObj import fromStr
 from UserManager import UserManager
 import copy
 
-import socket
-from BroadCast import BroadCast
+import time
+import random
 
 
 class CustomThread (threading.Thread):
-    def __init__(self, method):
+    def __init__(self, method, args=None):
         threading.Thread.__init__(self)
         self.method = method
+        self.args = args
 
     def run(self):
-        self.method()
+        if self.args is None:
+            self.method()
+        else:
+            self.method(self.args)
 
 
 class ABCASTManager(object):
@@ -26,6 +31,8 @@ class ABCASTManager(object):
     def __init__(self, userId, castSelector, clientManager):
         super(ABCASTManager, self).__init__()
         self.clock = 0
+        # self.clockMutex = threading.Lock()
+
         self.userId = userId
         self.inputPipe = PIPE()
         self.outputPipe = PIPE()
@@ -34,7 +41,7 @@ class ABCASTManager(object):
         self.responseReceiver = {}
         self.receiverMutex = threading.Lock()
 
-        self.clientList = []
+        self.clientList = clientManager.fetch_user_list()
         self.clientListMutex = threading.Lock()
         self.clientManager = clientManager
 
@@ -44,7 +51,7 @@ class ABCASTManager(object):
         self.recvProc = CustomThread(self._startReceiveMessage)
         self.sendProc = CustomThread(self._startSendBroadCast)
 
-    def start():
+    def start(self):
         self.recvProc.setDaemon(True)
         self.sendProc.setDaemon(True)
         self.recvProc.start()
@@ -87,55 +94,64 @@ class ABCASTManager(object):
     #block thread
     def _startReceiveMessage(self):
         while True:
-            msg = self.castSelector.recvCB()
-            msgObj = MessageObj(msg)
+            msg = self.castManager.recvCB()
+            msgObj = fromStr(msg)
 
             #selector
             #for A::
             if msgObj.type == 'A':
-                self.clientListMutex.acquire()
-                if msgObj.uniqueId() in self.clientList:
+                # print '%s receive A-Msg %s' % (self.userId, msg)
+                # self.clientListMutex.acquire()
+                if msgObj.sender in self.clientList:
                     self.heapMutex.acquire()
                     self.processQueue.push(msgObj)
                     self.heapMutex.release()
-                    self._sendMessageObjBroadCast(MessageObj(msgObj.sender, None, msgObj.oid, self.clock, 'P'), msgObj.sender)
-                self.clientListMutex.release()
+                    obj = MessageObj(msgObj.sender, None, msgObj.oid, self.clock, 'P')
+                    obj.replier = self.userId
+                    self._sendMessageObjBroadCast(obj, msgObj.sender)
+                # self.clientListMutex.release()
             elif msgObj.type == 'P':
             #for P::
+                # print '%s receive P-Msg %s' % (self.userId, msg)
                 self.receiverMutex.acquire()
                 if msgObj.uniqueId() in self.responseReceiver:
                     cList, lastObj = self.responseReceiver[msgObj.uniqueId()]
+                    # print '%s wait for %s, %d left' % (self.userId, msgObj.uniqueId(), len(cList))
+                    # print cList
                     if msgObj.replier in cList:
                         cList.remove(msgObj.replier)
-                        if lastObj.smallerThan(msgObj):
+                        if not lastObj or lastObj.smallerThan(msgObj):
                             self.responseReceiver[msgObj.uniqueId()] = (cList, msgObj)
                         if len(cList) == 0:
                             self._sendMessageObjBroadCast(MessageObj(self.userId, None, msgObj.oid, msgObj.mid, 'F'))
                             del self.responseReceiver[msgObj.uniqueId()]
                 self.receiverMutex.release()
             #for F::
+            else:
+                # print '%s receive F-Msg %s' % (self.userId, msg)
                 self.heapMutex.acquire()
                 self.processQueue.update(msgObj.uniqueId(), msgObj.mid)
-                while self.processQueue.top().delivered:
+                # print '%s is ready: %s' % (self.processQueue.top().uniqueId(), self.processQueue.top().delivered)
+                while (not self.processQueue.empty()) and self.processQueue.top().delivered:
                     committedObj = self.processQueue.pop()
+                    # print committedObj.content
                     self.outputPipe.write(committedObj.content)
                 self.heapMutex.release()
 
     #No lock allowed for this call if A::msg
     def _sendMessageObjBroadCast(self, msgObj, target=None):
-        if target is None:
-            self.castManager.sendCB(str(msgObj))
-        else:
-            self.castManager.sendCB(str(msgObj), target)
-
         if msgObj.type == 'A':
             #are these locks neccessary?
             self.receiverMutex.acquire()
             self.clientListMutex.acquire()
-            clist = copy.deepcopy(clientList)
+            clist = copy.deepcopy(self.clientList)
+            self.clientListMutex.release()
             self.responseReceiver[msgObj.uniqueId()] = (clist, None)
             self.receiverMutex.release()
-            self.clientListMutex.release()
+        if target is None:
+            self.castManager.sendCB(str(msgObj))
+        else:
+            self.castManager.sendCB(str(msgObj), target)
 
     #block thread
     def _startSendBroadCast(self):
@@ -146,14 +162,94 @@ class ABCASTManager(object):
             self._sendMessageObjBroadCast(msgObj)
 
 
-if __name__ == '__main__':
-    pass
-    # ip_addr = "localhost"
-    # port = 10000 + 5
-    # localaddr = (ip_addr, port)
+class FakeCASTSelecter(object):
+    def __init__(self, addr):
+        # self.pipes = {}
+        self.addr = addr
 
-    # b = BroadCast()
-    # um = UserManager(b, localaddr, user_id)
+    def sendCB(self, data, addr=None):
+        time.sleep(random.randint(0, 2))
+        if addr is None:
+            self.pipes['a'].write(data)
+            self.pipes['b'].write(data)
+            self.pipes['c'].write(data)
+        else:
+            p = self.pipes[addr]
+            p.write(data)
+
+    def recvCB(self):
+        return self.pipes[self.addr].read()
+
+
+class FakeClientList(object):
+    """docstring for FakeClientList"""
+    def __init__(self, addrList):
+        self.clients = addrList
+
+    def fetch_user_list(self):
+        return copy.deepcopy(self.clients)
+
+
+def writeA(args):
+    for x in xrange(0, args[1]):
+        args[0].write('A' + str(x))
+
+
+def writeB(args):
+    for x in xrange(0, args[1]):
+        args[0].write('B' + str(x))
+
+
+def writeC(args):
+    for x in xrange(0, args[1]):
+        args[0].write('C' + str(x))
+
+if __name__ == '__main__':
+    selectorA = FakeCASTSelecter('a')
+    selectorB = FakeCASTSelecter('b')
+    selectorC = FakeCASTSelecter('c')
+    pa = PIPE()
+    pb = PIPE()
+    pc = PIPE()
+    selectorA.pipes = {'a': pa, 'b': pb, 'c': pc}
+    selectorB.pipes = {'a': pa, 'b': pb, 'c': pc}
+    selectorC.pipes = {'a': pa, 'b': pb, 'c': pc}
+
+    cm = FakeClientList(['a', 'b', 'c'])
+    abcA = ABCASTManager('a', selectorA, cm)
+    abcB = ABCASTManager('b', selectorB, cm)
+    abcC = ABCASTManager('c', selectorC, cm)
+
+    abcA.start()
+    abcB.start()
+    abcC.start()
+
+    ta = CustomThread(writeA, [abcA, 4])
+    tb = CustomThread(writeB, [abcB, 3])
+    tc = CustomThread(writeC, [abcC, 4])
+
+    ta.start()
+    tb.start()
+    tc.start()
+
+    # print abcA.read()
+    # print abcB.read()
+    # print abcC.read()
+
+    for x in xrange(0, 11):
+        print 'A_%d: %s' % (x, abcA.read())
+    
+    print ''
+
+    for x in xrange(0, 11):
+        print 'B_%d: %s' % (x, abcB.read())
+
+    print ''
+
+    for x in xrange(0, 11):
+        print 'C_%d: %s' % (x, abcC.read())
+
+    print ''
 
     # selector = CASTSelecter(b, um)
     # manager = ABCASTManager()
@@ -163,4 +259,3 @@ if __name__ == '__main__':
     # manager.write('wiz')
     # print manager.read()
     # print manager.read()
-

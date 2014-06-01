@@ -96,7 +96,10 @@ class ABCASTManager(object):
     #block thread
     def _startReceiveMessage(self):
         while True:
+            # print 'receiving msg'
             msg = self.castManager.recvCB()
+            # print 'msg received'
+            # print self.clientList
             msgObj = fromStr(msg)
 
             #selector
@@ -114,6 +117,7 @@ class ABCASTManager(object):
                     obj = MessageObj(msgObj.sender, None, msgObj.oid, clk, 'P')
                     obj.replier = self.userId
                     self._sendMessageObjBroadCast(obj, msgObj.sender)
+                    # print 'P msg sent'
                 # self.clientListMutex.release()
             elif msgObj.type == 'P':
             #for P::
@@ -154,6 +158,8 @@ class ABCASTManager(object):
             self.responseReceiver[msgObj.uniqueId()] = (clist, None)
             self.receiverMutex.release()
         if target is None:
+            # print 'msg sent'
+            # print self.clientList
             self.castManager.sendCB(str(msgObj))
         else:
             self.castManager.sendCB(str(msgObj), target)

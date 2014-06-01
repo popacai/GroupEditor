@@ -2,7 +2,7 @@ from editor import EditorGUI
 from cooperator import cooperator
 from sys import argv
 import curses, time, thread, threading
-from pipe import PIPE
+from PIPE import PIPE
 from TTCP import *
 import socket
 

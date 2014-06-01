@@ -65,6 +65,8 @@ class BroadCast():
         return self.output_pipe.read()
 
     def send(self, addr, message): #return the input_pipe
+        if self.socks[addr] == None:
+            self.output_pipe.write(message)
         if addr not in self.input_pipes:
             print addr, "not in input_pipe"
             return None
@@ -82,6 +84,7 @@ class BroadCast():
                 pipe.write(message)
             except:
                 self.remove_addr(addr)
+        self.output_pipe.write(message)
         return len(self.input_pipes)
 
     def get_signal_message(self):

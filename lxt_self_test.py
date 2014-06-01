@@ -6,7 +6,7 @@ from PIPE import PIPE
 from TTCP import *
 import socket
 
-'''
+
 class recv_msg(threading.Thread):
     def __init__(self, read_pipe, write_pipe):
         threading.Thread.__init__(self)
@@ -24,7 +24,7 @@ class coop_recv_t(threading.Thread):
         self._coop = coop
     def run(self):
         self._coop.recv_message()
-'''
+
 
 class execute_msg(threading.Thread):
     def __init__(self, read_pipe, coops, gui):
@@ -74,7 +74,8 @@ class execute_msg(threading.Thread):
                 if name != msg[0]:
                     #print '???'
                     coop_row, coop_col = coop.get_para()
-                    if coop_row == ori_row and coop_col >= ori_row:
+                    if coop_row == ori_row and coop_col >= ori_col:
+                        #print ori_col, coop_col
                         coop.handle_cursor_move(0,1)
         elif msg[1] == 'insert' and msg[2] == '\n':
             for name, coop in self._coops.iteritems():
@@ -85,7 +86,7 @@ class execute_msg(threading.Thread):
                     elif coop_row == ori_row:
                         coop.handle_cursor_move(1, 0 - len(self._gui._buf.get_lines()[ori_row]))
             
-        elif (msg[1] == 'delete' or (msg[1] == 'insert' and msg[2] == chr(127))) and ori_col > 0:
+        elif msg[1] == 'delete' or (msg[1] == 'insert' and msg[2] == chr(127) and ori_col > 0):
             #print '!!!'
             for name, coop in self._coops.iteritems():
                 if name != msg[0]:
@@ -94,7 +95,7 @@ class execute_msg(threading.Thread):
                     if coop_row == ori_row and coop_col >= ori_col:
                         coop.handle_cursor_move(0, -1)
 
-        elif (msg[1] == 'delete' or (msg[1] == 'insert' and msg[2] == chr(127))) and ori_col == 0:
+        elif msg[1] == 'insert' and msg[2] == chr(127) and ori_col == 0:
             #print '!!!'
             for name, coop in self._coops.iteritems():
                 if name != msg[0]:
@@ -122,7 +123,6 @@ if __name__ == '__main__':
     name = argv[1]
     filename = argv[2]
     ipaddr = argv[3]
-
     coops = {}
 
     stdscr = curses.initscr()

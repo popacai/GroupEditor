@@ -45,7 +45,7 @@ class user_add(Thread):
             self.um.update_user_list(_temp, self.um.view_id)
 
             self.am.addUser(user)
-            print 'add user', self.um.fetch_user_list()
+            print 'user_list:', self.um.fetch_user_list()
             #add_new_user_abcast_list(user)
 
 class Thread_recvGB(Thread):
@@ -79,7 +79,6 @@ class read_from_abcast(Thread):
         self.ab = pipe
     def run(self):
         while True:
-            print 'start to read ab'
             print self.ab.read()
 
 #20 members at most

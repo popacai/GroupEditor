@@ -30,8 +30,11 @@ if __name__ != "__main__":
     exit()
 
 def add_new_user_abcast_list(user):
+    global am
+    am.addUser(user)
     print 'new user add', user
     pass
+
 # Test used only 
 class user_add(Thread):
     def __init__(self, um):
@@ -135,8 +138,10 @@ def main():
     print '====================================================='
     #Init ABCASTManager
 
+
     am = ABCASTManager(user_id, t_cast_s, um)
     am.start()
+    global am
 
     #Init recvCB()
     #t_cb_recv = Thread_recvCB(t_cast_s)

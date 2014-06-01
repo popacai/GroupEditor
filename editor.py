@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from sys import argv
 import curses
 import os
-from pipe import PIPE
+from PIPE import PIPE
 
 
 class Buffer(object):

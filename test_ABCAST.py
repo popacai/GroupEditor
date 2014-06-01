@@ -29,17 +29,12 @@ import time
 if __name__ != "__main__":
     exit()
 
-def add_new_user_abcast_list(user):
-    global am
-    am.addUser(user)
-    print 'new user add', user
-    pass
-
 # Test used only 
 class user_add(Thread):
-    def __init__(self, um):
+    def __init__(self, um, am):
         Thread.__init__(self)
         self.um = um
+        self.am = am
         
     def run(self):
         while True:
@@ -49,7 +44,9 @@ class user_add(Thread):
             self.um.view_id += 1
             self.um.update_user_list(_temp, self.um.view_id)
 
-            add_new_user_abcast_list(user)
+            self.am.addUser(user)
+            print 'add user', self.um.fetch_user_list()
+            #add_new_user_abcast_list(user)
 
 class Thread_recvGB(Thread):
     def __init__(self, cast_s):
@@ -100,13 +97,7 @@ def main():
     b = BroadCast()
     um = UserManager(b, localaddr, user_id)
 
-    #Daemon threading for keeping adding the users 
-    ua = user_add(um)
-    ua.setDaemon(True)
-    ua.start()
-    #auto UserManager update user list
-
-    #Try to connect the other members
+        #Try to connect the other members
     for i in range(20):
         if i == index:
             continue #don't need to connect itself
@@ -118,8 +109,8 @@ def main():
 
         sock = um.add_user(addr, remote_uid)
 
-        if sock != None:
-            add_new_user_abcast_list(remote_uid)
+#        if sock != None:
+#            add_new_user_abcast_list(remote_uid)
 
     user_list = um.temp_user_list
     um.update_user_list(user_list.keys(), um.view_id + 1)
@@ -136,12 +127,20 @@ def main():
     t_gb_recv.start()
 
     print '====================================================='
+
     #Init ABCASTManager
-
-
     am = ABCASTManager(user_id, t_cast_s, um)
     am.start()
-    global am
+
+    #Code from Tao
+    #Daemon threading for keeping adding the users 
+    am.addUser("321") #call for update
+    print 'user_list', um.fetch_user_list()
+    
+    ua = user_add(um, am)
+    ua.setDaemon(True)
+    ua.start()
+    #auto UserManager update user list
 
     #Init recvCB()
     #t_cb_recv = Thread_recvCB(t_cast_s)

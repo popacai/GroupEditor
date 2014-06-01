@@ -29,15 +29,15 @@ class UserManager():
         self.view_id = 0
 
         time.sleep(1)
+
         sock = self.t_ll.connect(self.local_addr, self.UID)
         u = self.t_ll.new_user()
-
-        #self.view_id += 1
-        #self.update_user_list(u, self.view_id)
+        self.b.add_addr(u, None) #send loopback
+        #self.b.add_addr(u, sock)
+        
         if u == self.UID:
             print 'succeed to connect itself'
             pass
-            #self.temp_user_list[u] = sock
         else:
             print 'error to add self'
 
@@ -241,11 +241,6 @@ if __name__ == "__main__":
                 while True:
                     print um.quit_user()
             print "after update", um.user_list.keys()
-
-        
-
-    
-
     
 
 

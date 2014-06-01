@@ -6,7 +6,7 @@ from PIPE import PIPE
 from TTCP import *
 import socket
 
-
+'''
 class recv_msg(threading.Thread):
     def __init__(self, read_pipe, write_pipe):
         threading.Thread.__init__(self)
@@ -24,6 +24,7 @@ class coop_recv_t(threading.Thread):
         self._coop = coop
     def run(self):
         self._coop.recv_message()
+'''
 
 
 class execute_msg(threading.Thread):
@@ -50,43 +51,28 @@ class execute_msg(threading.Thread):
                 break
             elif msg[1] == 'insert':
                 ori_row, ori_col = coop.get_para()
+                ori_len = 0;
+                if ori_row > 0:
+                    ori_len = len(self._gui._buf.get_lines()[ori_row - 1])
                 if coop.handle_insert(ord(msg[2])):
                     #if msg[2] == chr(127):
                         #print 'update'
                         #TODO what the fuck???
-                    self.update_cursors(ori_row, ori_col, msg)
+                    self.update_insert_cursors(ori_row, ori_col, ori_len, msg)
 
             elif msg[1] == 'move':
                 coop.handle_cursor_move(int(msg[2]), int(msg[3]))
             elif msg[1] == 'delete':
                 ori_row, ori_col = coop.get_para()
                 coop.handle_delete()
-                self.update_cursors(ori_row, ori_col, msg)
+                self.update_delete_cursors(ori_row, ori_col, msg)
                 #print '???'
             
             coop._gui._draw()
             coop._gui._refresh_cursors()
 
-    def update_cursors(self, ori_row, ori_col, msg):
-        if msg[1] == 'insert' and msg[2] != '\n' and msg[2] != chr(127):
-            for name, coop in self._coops.iteritems():
-                #print '!!!'
-                if name != msg[0]:
-                    #print '???'
-                    coop_row, coop_col = coop.get_para()
-                    if coop_row == ori_row and coop_col >= ori_col:
-                        #print ori_col, coop_col
-                        coop.handle_cursor_move(0,1)
-        elif msg[1] == 'insert' and msg[2] == '\n':
-            for name, coop in self._coops.iteritems():
-                if name != msg[0]:
-                    coop_row, coop_col = coop.get_para()
-                    if coop_row > ori_row:
-                        coop.handle_cursor_move(1,0)
-                    elif coop_row == ori_row:
-                        coop.handle_cursor_move(1, 0 - len(self._gui._buf.get_lines()[ori_row]))
-            
-        elif msg[1] == 'delete' or (msg[1] == 'insert' and msg[2] == chr(127) and ori_col > 0):
+    def update_delete_cursors(self, ori_row, ori_col, msg):
+        if ori_col > 0:
             #print '!!!'
             for name, coop in self._coops.iteritems():
                 if name != msg[0]:
@@ -95,7 +81,28 @@ class execute_msg(threading.Thread):
                     if coop_row == ori_row and coop_col >= ori_col:
                         coop.handle_cursor_move(0, -1)
 
-        elif msg[1] == 'insert' and msg[2] == chr(127) and ori_col == 0:
+        
+    def update_insert_cursors(self, ori_row, ori_col, ori_len, msg):
+        if msg[2] != '\n' and msg[2] != chr(127):
+            for name, coop in self._coops.iteritems():
+                #print '!!!'
+                if name != msg[0]:
+                    #print '???'
+                    coop_row, coop_col = coop.get_para()
+                    if coop_row == ori_row and coop_col > ori_col:
+                        #print ori_col, coop_col
+                        coop.handle_cursor_move(0,1)
+
+        elif msg[2] == '\n':
+            for name, coop in self._coops.iteritems():
+                if name != msg[0]:
+                    coop_row, coop_col = coop.get_para()
+                    if coop_row > ori_row:
+                        coop.handle_cursor_move(1,0)
+                    elif coop_row == ori_row and coop_col > ori_col:
+                        coop.handle_cursor_move(1, 0 - len(self._gui._buf.get_lines()[ori_row]))
+
+        elif msg[2] == chr(127) and ori_col == 0:
             #print '!!!'
             for name, coop in self._coops.iteritems():
                 if name != msg[0]:
@@ -103,6 +110,21 @@ class execute_msg(threading.Thread):
                     #print '???'
                     if coop_row > ori_row:
                         coop.handle_cursor_move(-1, 0)
+                    elif coop_row == ori_row:
+                        coop.handle_cursor_move(-1, ori_len)
+
+        elif msg[2] == chr(127) and ori_col > 0:
+            #print '!!!'
+            for name, coop in self._coops.iteritems():
+                if name != msg[0]:
+                    coop_row, coop_col = coop.get_para()
+                    #print '!!!'
+                    if coop_row == ori_row and coop_col >= ori_col:
+                        coop.handle_cursor_move(0, -1)
+
+
+
+        
 
 
 

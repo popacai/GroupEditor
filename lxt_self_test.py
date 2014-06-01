@@ -121,6 +121,8 @@ if __name__ == '__main__':
     
     name = argv[1]
     filename = argv[2]
+    ipaddr = argv[3]
+
     coops = {}
 
     stdscr = curses.initscr()
@@ -136,7 +138,7 @@ if __name__ == '__main__':
 	#gui._cooperators.append(cooperator(gui, 2))
 	#gui._cooperators.append(cooperator(gui, 3))
 
-    addr = ("localhost", 10003)
+    addr = (ipaddr, 10003)
     s = socket.socket()
     s.connect(addr)
 

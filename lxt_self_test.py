@@ -138,7 +138,7 @@ if __name__ == '__main__':
 	#gui._cooperators.append(cooperator(gui, 2))
 	#gui._cooperators.append(cooperator(gui, 3))
 
-    addr = (ipaddr, 10003)
+    addr = (ipaddr, 12222)
     s = socket.socket()
     s.connect(addr)
 

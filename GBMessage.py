@@ -37,7 +37,7 @@ class GBMessage():
     def __decode__(self, message):
         g = json.loads(message)
         self.view_id = g["view_id"]
-        self.user_id = g["user_id"]
+        self.user_id = str(g["user_id"])
         self.seq = g["seq"]
         self.action = g["action"]
         self.message = g["message"]

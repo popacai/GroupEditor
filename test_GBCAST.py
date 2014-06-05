@@ -101,12 +101,19 @@ def main():
 
     print '====================================================='
     #message 
+    count = 0
     while True:
         message = raw_input()
         if (message == "sync"):
             gb_m.send_user_dict_request()
+        elif message == "test":
+            gb_m.test_clock(str(count))
+            count += 1
+        elif message == "userlist":
+            print gb_m.user_m.temp_user_list.keys()
         else:
-            t_cast_s.sendGB(message)
+            pass
+
 
     #Init abcast
 

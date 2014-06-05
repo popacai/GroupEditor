@@ -13,7 +13,7 @@ class UserManager():
     def __init__(self, broadcast ,addr, UID):
         self.b = broadcast
 
-        self.UID = UID.ljust(10)
+        self.UID = UID.ljust(20)
 
         self.local_addr = addr
 
@@ -112,7 +112,7 @@ class UserManager():
 def cast_connect(addr, uid):
     s = socket.socket()
     try:
-        uid = uid.ljust(10)
+        uid = uid.ljust(20)
         s.connect(addr)
         s.sendall(uid)
     except:
@@ -131,7 +131,7 @@ class LocalListener(Thread):
 
         self.sock = socket.socket()
         self.sock.bind(addr)
-        self.sock.listen(10)
+        self.sock.listen(20)
 
     def new_user(self):
         return self.pipe.read()
@@ -139,7 +139,7 @@ class LocalListener(Thread):
     def connect(self, addr, uid):
         s = socket.socket()
         try:
-            uid = uid.ljust(10)
+            uid = uid.ljust(20)
             s.connect(addr)
             s.sendall(uid)
         except:
@@ -151,7 +151,7 @@ class LocalListener(Thread):
         while True:
             conn, addr = self.sock.accept()
             try:
-                user_id = conn.recv(10)
+                user_id = conn.recv(20)
                 self.user_list[user_id] = conn
                 self.pipe.write(user_id)
             except:
@@ -195,7 +195,7 @@ if __name__ == "__main__":
         remote_server = ("localhost", 12222)
         local_addr = ("localhost", random.randint(10000, 11000))
 
-        user_name = sys.argv[2].ljust(10)
+        user_name = sys.argv[2].ljust(20)
         t_ll = LocalListener(local_addr, {})
         s = t_ll.connect(remote_server, user_name)
 
@@ -230,7 +230,7 @@ if __name__ == "__main__":
             print "before update", um.user_list.keys()
             
             try:
-                del users["222".ljust(10)]
+                del users["222".ljust(20)]
             except:
                 print 'not 222'
             view_id += 1

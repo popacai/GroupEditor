@@ -49,7 +49,7 @@ class GBCASTManager():
 
         print 'UID', UID
 
-        self.STATUS = 0 #use status machine to control
+        self.status = 0 #use status machine to control
         pass
 
     def update_user_dict(self, message):
@@ -58,6 +58,7 @@ class GBCASTManager():
         print self.addrmanager.get_dict()
 
     def send_user_dict_request(self):
+        self.status = 1
         user_dict = self.addrmanager.get_dict()
         str_json = json.dumps(user_dict)
 
@@ -118,9 +119,14 @@ class GBCASTManager():
         if (gb.action == "ask for dict"):
             self.update_user_dict(gb.message)
             self.send_user_dict()
+            if self.status == 1:
+                self.status = 2
 
         if (gb.action == "dict"):
             self.update_user_dict(gb.message)
+            if self.status == 2:
+                #connect the status
+                self.status = 3
 
         self.notify_all()
         '''

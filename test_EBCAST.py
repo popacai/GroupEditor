@@ -70,17 +70,11 @@ def main():
         #if sock != None:
             #add_new_user_abcast_list(remote_uid)
     '''
-    offset = int(sys.argv[2])
-    remote_ip_addr = ("localhost", 10000 + offset)
 
-    remote_uid = str(offset).ljust(10)
-    sock = um.add_user(remote_ip_addr, remote_uid)
 
-    '''
     user_list = um.temp_user_list
     um.update_user_list(user_list.keys(), um.view_id + 1)
     user_list, view_id = um.get_user_list()
-    '''
 
     #Init CASTSelecter
     t_cast_s = CASTSelecter(b)

@@ -3,7 +3,9 @@
 
 from UserManager import UserManager
 from CASTSelecter import CASTSelecter
+from AddrManager import AddrManager
 from GBMessage import GBMessage
+import json
 import threading
 '''
 detect user add
@@ -43,31 +45,43 @@ class GBCASTManager():
         self.lock_user_list = threading.Lock()
         self.cond = threading.Condition(self.lock_user_list)
 
+        self.addrmanager = AddrManager(self.user_m.local_addr, UID)
+
         print 'UID', UID
+
+        self.STATUS = 0 #use status machine to control
         pass
-    
-    def send_sync_response(self, client):
-        #Send to all
-        gb = GBMessage()
-        gb.view_id = self.user_m.view_id
-        gb.user_id = self.UID
-        gb.action = "sync"
-        
-        print self.user_m.to_json()
-        gb.message = self.user_m.to_json()
 
-        str_message = str(gb)
-        self.cast_s.sendGB(str_message, client)
+    def update_user_dict(self, message):
+        user_dict = json.loads(message)
+        self.addrmanager.update_dict(user_dict)
+        print self.addrmanager.get_dict()
 
+    def send_user_dict_request(self):
+        user_dict = self.addrmanager.get_dict()
+        str_json = json.dumps(user_dict)
 
-    def send_sync_request(self):
-        gb = GBMessage()
-        gb.view_id = self.user_m.view_id
-        gb.user_id = self.UID
-        gb.action = "sync-req"
-        gb.message = ""
+        request_message = GBMessage()
+        request_message.user_id = self.UID
+        request_message.action = "ask for dict"
+        request_message.message = str_json
+        str_message = request_message.__encode__()
+        self.cast_s.sendGB(str_message)
 
-        str_message = str(gb)
+    def send_user_dict(self):
+        user_dict = self.addrmanager.get_dict()
+        #dumps to json format
+        str_json = json.dumps(user_dict)
+
+        dict_message = GBMessage()
+
+        dict_message.view_id = self.user_m.view_id
+        dict_message.user_id = self.UID
+        dict_message.action = "dict"
+        dict_message.message = str_json
+
+        str_message = dict_message.__encode__()
+
         self.cast_s.sendGB(str_message)
 
     def send_fetch_all_data(self):
@@ -93,6 +107,7 @@ class GBCASTManager():
 
         print "action", gb.action
         if (gb.action == "kick"):
+            #remote delete
             if (gb.view_id < self.user_m.view_id):
                 print gb.view_id, self.user_m.view_id, ' view id is too old' 
                 return
@@ -100,41 +115,12 @@ class GBCASTManager():
             if (gb.user_id in self.user_m.fetch_user_list()):
                 self.delete_user(gb.message)
 
-        if (gb.action == "sync"):
-            self.lock_user_list.acquire()
-            #TODO: lock please
-            if (gb.view_id < self.user_m.view_id):
-                print gb.view_id, self.user_m.view_id, ' view id is too old' 
-                return
-            
-            new_l = self.user_m.to_list(gb.message)
-            old_l = self.user_m.fetch_user_list()
+        if (gb.action == "ask for dict"):
+            self.update_user_dict(gb.message)
+            self.send_user_dict()
 
-            user_not_in_new = [user for user in old_l if user not in new_l]
-            for user in user_not_in_new:
-                self.send_kick_message(user)
-                self.delete_user(user)
-
-            self.user_m.update_user_list(new_l, gb.view_id)
-
-            user_not_in_local = [user for user in new_l if user not in self.user_m.fetch_user_list()]
-
-            for user in user_not_in_local:
-                self.send_kick_message(user)
-                self.delete_user(user)
-
-            #kick the new nodes. 
-            print 'after update', self.user_m.get_user_list()
-            self.lock_user_list.release()
-
-            #only kick the old nodes
-            #update
-            pass
-
-        if (gb.action == "sync-req"):
-            self.send_sync_response(gb.user_id)
-            #send sync
-
+        if (gb.action == "dict"):
+            self.update_user_dict(gb.message)
 
         self.notify_all()
         '''
@@ -152,13 +138,13 @@ class GBCASTManager():
             if (view_id) is equal
                 send all the data to that server
         '''
-    def send_kick_message(self, user_to_kick):
+    def send_kick_message(self, message):
         kick_message = GBMessage()
 
         kick_message.view_id = self.user_m.view_id
         kick_message.user_id = self.UID
         kick_message.action = "kick"
-        kick_message.message = user_to_kick
+        kick_message.message = message
 
         str_message = kick_message.__encode__()
 
@@ -169,12 +155,14 @@ class GBCASTManager():
         user_to_kick = self.user_m.quit_user()
 
         self.send_kick_message(user_to_kick)
+        #self delete?
         self.delete_user(user_to_kick)
         '''
         read signal from the signal_pipe 
         call remove user
         '''
     def delete_user(self, user_to_kick):
+        return
         self.lock_user_list.acquire()
         if user_to_kick in self.user_m.fetch_user_list():
             new_list = [user for user in self.user_m.fetch_user_list() if user != user_to_kick]

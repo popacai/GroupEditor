@@ -24,6 +24,7 @@ class EBCASTManager(object):
 
     def foundError(self, errUser):
         if errUser in self.abcManager.clientList:
+            print 'first time'
             self.gbcManager.delete_user(errUser)
             self.abcManager.removeUser(errUser)
             bcMsg = self.userId + '::' + errUser
@@ -43,6 +44,7 @@ class EBCASTManager(object):
         reply = errObj.sender + '::' + errObj.errorUser
         mList = []
         if errObj.errorUser in self.abcManager.clientList:
+            print 'first time'
             self.gbcManager.delete_user(errObj.errorUser)
             self.abcManager.removeUser(errObj.errorUser)
             bcMsg = self.userId + '::' + errObj.errorUser

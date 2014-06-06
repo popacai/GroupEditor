@@ -80,14 +80,14 @@ class EBCASTManager(object):
                     if errObj.msgList[i] > 0:
                         currentList[i] = errObj.msgList[i]
                 if len(cList) == 0:
-                    if responseReceiver[errObj.errorUser][2]:
-                        resendObj = ErrorMsgObject(self.userId, errObj.errorUser, [x[0] for x in responseReceiver[errObj.errorUser][0]])
-                        del responseReceiver[errObj.errorUser]
+                    if self.responseReceiver[errObj.errorUser][2]:
+                        resendObj = ErrorMsgObject(self.userId, errObj.errorUser, [x[0] for x in self.responseReceiver[errObj.errorUser][0]])
+                        del self.responseReceiver[errObj.errorUser]
                         self.sendErrorBroadCast(str(resendObj))
                     else:
-                        self.abcManager.restoreData(errObj.errorUser, responseReceiver[errObj.errorUser][0])
+                        self.abcManager.restoreData(errObj.errorUser, self.responseReceiver[errObj.errorUser][0])
                         self.abcManager.logManager.removeUser(errObj.errorUser)
-                        del responseReceiver[errObj.errorUser]
+                        del self.responseReceiver[errObj.errorUser]
         self.receiverMutex.release()
 
 if __name__ == '__main__':

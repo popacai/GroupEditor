@@ -11,8 +11,9 @@ class ViewChange(Thread):
         self.gbcast = gbcast
         Log = {}
 
-    def prepare(self, view_id):
-        pass
+    def prepare(self, gb):
+        if (gb.view_id > self.view_id):
+            pass
 
     def prepare_ok(self, view_id, user_id):
         pass

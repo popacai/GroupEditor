@@ -153,6 +153,9 @@ def main():
     #message 
     while True:
         message = raw_input()
+        if (message == "userlist"):
+            print "userManager", um.fetch_user_list()
+            print "abcast", am.clientList
         if (message == ""):
             continue
         #t_cast_s.sendCB(message)

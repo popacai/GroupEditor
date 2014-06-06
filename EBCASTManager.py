@@ -33,7 +33,7 @@ class EBCASTManager(object):
                 bcMsg = bcMsg + msgContent
                 cList = copy.deepcopy(self.abcManager.clientList)
                 self.receiverMutex.acquire()
-                responseReceiver[errUser] = ([(oid, -1) for oid in oidList], cList, False)
+                self.responseReceiver[errUser] = ([(oid, -1) for oid in oidList], cList, False)
                 self.receiverMutex.release()
                 self.sendErrorBroadCast(bcMsg)
 
@@ -51,7 +51,7 @@ class EBCASTManager(object):
                 msgContent = '_'.join([str(x) for x in oidList])
                 bcMsg = bcMsg + msgContent
                 self.receiverMutex.acquire()
-                responseReceiver[errUser] = ([(oid, -1) for oid in oidList], cList, False)
+                self.responseReceiver[errUser] = ([(oid, -1) for oid in oidList], cList, False)
                 self.receiverMutex.release()
                 self.sendErrorBroadCast(bcMsg)
         for oid in errObj.msgList:

@@ -44,6 +44,9 @@ class BroadCast():
         input_pipe.close()
 
         self.mtcp.close(addr)
+
+        self.socks[addr] = None
+        self.input_pipes[addr] = None
         del self.socks[addr]
         del self.input_pipes[addr]
 

@@ -102,11 +102,18 @@ class UserManager():
                     continue
                 self.user_list[user] = self.temp_user_list[user] #copy the socket
 
+        temp_to_delete = []
         for user in self.user_list:
             if user not in users:
                 print 'remove', user, "in the user list"
-                del self.user_list[user]
+                temp_to_delete.append(user)
                 self.b.remove_addr(user)
+
+        for user in temp_to_delete:
+            self.user_list[user].close()
+            self.user_list[user] = None
+            del self.user_list[user]
+
         self.lock.release()
 
 def cast_connect(addr, uid):

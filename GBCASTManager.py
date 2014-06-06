@@ -234,6 +234,7 @@ class GBCASTManager():
         #self detect
         print "ERR", "self detect", user_to_kick
         self.ebcast.foundError(user_to_kick)
+        print "ERR", "foundError return"
 
     def recv_delete_msg(self, message, src):
         print 'ERR', "RECV delete message from", src, "msg:", message
@@ -269,5 +270,6 @@ class GBCASTManager():
         userlist = self.user_m.fetch_user_list()
         userlist.remove(user)
         self.user_m.update_user_list(userlist, self.user_m.view_id)
+        print 'ERR', 'delete user done'
 
 

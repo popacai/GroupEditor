@@ -29,7 +29,7 @@ class TRTCP(Thread):
             self.signal_pipe.write("addr closed," + str(self.addr))
         except:
             pass
-        thread.exit()
+        #thread.exit()
 
 
     def run(self):
@@ -84,7 +84,7 @@ class TSTCP(Thread):
             self.signal_pipe.write("addr closed," + str(self.addr))
         except:
             pass
-        thread.close()
+        #thread.close()
     def run(self): 
         global END_TCP_FLAG
         while True:

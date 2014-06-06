@@ -103,7 +103,7 @@ def main():
 
     print '====================================================='
     #ABCAST READER
-    t_ab_reader = read_from_abcast(am)
+    t_ab_reader = read_from_abcast(ab_m)
     t_ab_reader.setDaemon(True)
     t_ab_reader.start()
     #message 

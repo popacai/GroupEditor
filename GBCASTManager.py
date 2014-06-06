@@ -232,6 +232,7 @@ class GBCASTManager():
         user_to_kick = self.user_m.quit_user()
 
         #self detect
+        print "ERR", "self detect", user_to_kick
         self.ebcast.foundError(user_to_kick)
 
     def recv_delete_msg(self, message, src):

@@ -23,6 +23,7 @@ from UserManager import UserManager
 from BroadCast import BroadCast
 from CASTSelecter import CASTSelecter
 from ABCASTManager import ABCASTManager
+from LogManager import LogManager
 import sys
 import time
 
@@ -128,7 +129,7 @@ def main():
     print '====================================================='
 
     #Init ABCASTManager
-    am = ABCASTManager(user_id, t_cast_s, um)
+    am = ABCASTManager(user_id, t_cast_s, um, LogManager())
     am.start()
 
     #Code from Tao

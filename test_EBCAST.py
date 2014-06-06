@@ -8,6 +8,7 @@ from CASTSelecter import CASTSelecter
 from Monitor import Thread_GBCAST
 from GBCASTManager import GBCASTManager
 from ABCASTManager import ABCASTManager
+from LogManager import LogManager
 import sys
 import time
 
@@ -55,12 +56,11 @@ def main():
 
     #Try to connect the other members
     #Testing version 1
-    '''
     for i in range(20):
         if i == index:
             continue #don't need to connect itself
 
-        remote_uid = str(i).ljust(10)
+        remote_uid = str(i).ljust(20)
 
         port = 10000 + i
         addr = (ip_addr, port)
@@ -69,7 +69,6 @@ def main():
 
         #if sock != None:
             #add_new_user_abcast_list(remote_uid)
-    '''
 
 
     user_list = um.temp_user_list
@@ -83,8 +82,8 @@ def main():
 
     #Init ABCAST
     #fake
-    #ab_m = ABCASTManager(user_id, t_cast_s, um) 
-    ab_m = None
+    ab_m = ABCASTManager(user_id, t_cast_s, um, LogManager()) 
+    #ab_m = None
 
     #Init GBCAST
     gb_m = GBCASTManager(user_id,t_cast_s, um, ab_m)
@@ -97,10 +96,13 @@ def main():
     #message 
     while True:
         message = raw_input()
+        if message is not "":
+            continue
         if (message == "sync"):
             gb_m.send_user_dict_request()
         else:
-            t_cast_s.sendGB(message)
+            ab_m.write(message)
+            
 
     #Init abcast
 

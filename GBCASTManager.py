@@ -25,7 +25,7 @@ detect user add
 detect user remove
     send_all(kick user)
 
-recv_gbcast view_change message
+recv_gbcast viewchange message
     view change message
     ...
 
@@ -158,7 +158,10 @@ class GBCASTManager():
                     print 'error!', 'cannot join the group, try again'
                     self.status = 0
         if (gb.action == "prepare"):
-            pass
+            if gb.view_id > self.user_m.view_id:
+                self.viewchange.prepare(gb)
+            else:
+                print 'PREPARE', "old view id", gb.view_id
 
         if (gb.action == "prepare-ok"):
             pass
@@ -188,7 +191,7 @@ class GBCASTManager():
         message.view_id = self.user_m.view_id
         message.user_id = self.UID
         message.action = "prepare-ok"
-        message.message = message
+        #message.message = 
 
         str_message = message.__encode__()
 
@@ -197,10 +200,16 @@ class GBCASTManager():
     def send_prepare(self):
         message = GBMessage()
 
-        message.view_id = self.user_m.view_id
+        message.view_id = self.user_m.view_id + 1
+        
         message.user_id = self.UID
         message.action = "prepare"
-        message.message = message
+
+        new_user_list = self.user_m.fetch_user_list().append(self.UID)
+        str_json = json.dumps(new_user_list)
+        print "PREPARE", "new_user_list", new_user_list
+
+        message.message = str_json
 
         str_message = message.__encode__()
 

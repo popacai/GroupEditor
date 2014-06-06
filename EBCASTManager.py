@@ -8,14 +8,18 @@ import threading
 
 class EBCASTManager(object):
     """docstring for EBCASTManager"""
-    def __init__(self, abcManager, userId):
+    def __init__(self, abcManager, gbcManager, userId):
         super(EBCASTManager, self).__init__()
         self.abcManager = abcManager
+        self.gbcManager = gbcManager
         self.responseReceiver = {}
         self.receiverMutex = threading.Lock()
         self.userId = userId
 
     def sendErrorBroadCast(self, errMsg):
+        pass
+
+    def foundError(self, errUser):
         pass
 
     def receiveErrorBroadCast(self, errMsg):
@@ -25,7 +29,12 @@ class EBCASTManager(object):
         mList = []
         if errObj.errorUser in self.abcManager.clientList:
             self.abcManager.removeUser(errObj.errorUser)
-            
+            bcMsg = self.userId + '::' + errObj.errorUser
+            oidList = logManager.prepare[errObj.errorUser]
+            if not oidList is None:
+                msgContent = '_'.join([str(x) for x in oidList])
+                bcMsg = bcMsg + msgContent
+
             #todo::prepare error message and send
             #todo::build receiver
         for oid in errObj.msgList:

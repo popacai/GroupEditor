@@ -27,7 +27,7 @@ class EBCASTManager(object):
             self.gbcManager.delete_user(errUser)
             self.abcManager.removeUser(errUser)
             bcMsg = self.userId + '::' + errUser
-            oidList = self.abcManager.logManager.prepare[errUser]
+            oidList = self.abcManager.logManager.prepared[errUser]
             if not oidList is None:
                 msgContent = '_'.join([str(x) for x in oidList])
                 bcMsg = bcMsg + msgContent

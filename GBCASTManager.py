@@ -216,12 +216,13 @@ class GBCASTManager():
         self.cast_s.sendGB(str_message)
 
     def send_kick_message(self, message):
+        print 'ERR', 'SEND Kick Message', message
         kick_message = GBMessage()
 
         kick_message.view_id = self.user_m.view_id
         kick_message.user_id = self.UID
         kick_message.action = "kick"
-        kick_message.message = message
+        kick_message.message = "B" + message
 
         str_message = kick_message.__encode__()
 
@@ -238,19 +239,26 @@ class GBCASTManager():
 
     def recv_delete_msg(self, message, src):
         print 'ERR', "RECV delete message from", src, "msg:", message
-        message = self.ebcast.receiveErrorBroadCast(message)
+        trim_message = message[1:]
+        if message[0] == "B":
+            message = self.ebcast.receiveErrorBroadCast(trim_message)
+        if message[0] == "R":
+            message = self.ebcast.receiveErrorReply(trim_message)
 
-        kick_message = GBMessage()
+        if message == None:
+            return
+        else:
+            kick_message = GBMessage()
 
-        kick_message.view_id = self.user_m.view_id
-        kick_message.user_id = self.UID
-        kick_message.action = "kick"
-        kick_message.message = message
+            kick_message.view_id = self.user_m.view_id
+            kick_message.user_id = self.UID
+            kick_message.action = "kick"
+            kick_message.message = "R" + message
 
-        str_message = kick_message.__encode__()
+            str_message = kick_message.__encode__()
 
-        self.cast_s.sendGB(str_message, src)
-       
+            self.cast_s.sendGB(str_message, src)
+           
         return
         '''
         self.lock_user_list.acquire()

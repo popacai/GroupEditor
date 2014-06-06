@@ -8,6 +8,7 @@ from CASTSelecter import CASTSelecter
 from Monitor import Thread_GBCAST
 from GBCASTManager import GBCASTManager
 from ABCASTManager import ABCASTManager
+from LogManager import LogManager
 import sys
 import time
 
@@ -89,7 +90,7 @@ def main():
 
     #Init ABCAST
     #fake
-    #ab_m = ABCASTManager(user_id, t_cast_s, um) 
+    ab_m = ABCASTManager(user_id, t_cast_s, um, LogManager()) 
     ab_m = None
 
     #Init GBCAST
@@ -106,11 +107,15 @@ def main():
         message = raw_input()
         if (message == "sync"):
             gb_m.send_user_dict_request()
-        elif message == "test":
+        elif message == "clock":
             gb_m.test_clock(str(count))
             count += 1
         elif message == "userlist":
             print gb_m.user_m.temp_user_list.keys()
+        elif message == "prepare":
+            gb_m.send_prepare()
+        elif message == "prepare-ok":
+            gb_m.send_prepare_ok()
         else:
             pass
 

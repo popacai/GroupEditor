@@ -4,7 +4,9 @@
 from UserManager import UserManager
 from CASTSelecter import CASTSelecter
 from EBCASTManager import EBCASTManager
+from AddrManager import AddrManager
 from GBMessage import GBMessage
+from ViewChange import ViewChange
 import json
 import threading
 '''
@@ -52,6 +54,8 @@ class GBCASTManager():
         self.status = 0 #use status machine to control
         #self.status = 1
         self.ebcast = EBCASTManager(self.abcast, self, self.UID)
+
+        self.viewchange = ViewChange(self.abcast, self)
 
     def update_user_dict(self, message):
         user_dict = json.loads(message)
@@ -127,7 +131,7 @@ class GBCASTManager():
 
         print "action", gb.action
         if (gb.action == "clock"):
-            print gb.message
+            print gb.user_id, gb.message
         if (gb.action == "kick"):
             #remote delete
             if (gb.view_id < self.user_m.view_id):
@@ -135,7 +139,7 @@ class GBCASTManager():
                 return
             print 'kick', gb.message , "*"
             if (gb.user_id in self.user_m.fetch_user_list()):
-                self.recv_delete_msg(gb.message)
+                self.recv_delete_msg(gb.message, gb.user_id)
 
         if (gb.action == "ask for dict"):
             if (gb.user_id == self.UID):
@@ -178,6 +182,30 @@ class GBCASTManager():
             if (view_id) is equal
                 send all the data to that server
         '''
+    def send_prepare_ok(self):
+        message = GBMessage()
+
+        message.view_id = self.user_m.view_id
+        message.user_id = self.UID
+        message.action = "prepare-ok"
+        message.message = message
+
+        str_message = message.__encode__()
+
+        self.cast_s.sendGB(str_message)
+
+    def send_prepare(self):
+        message = GBMessage()
+
+        message.view_id = self.user_m.view_id
+        message.user_id = self.UID
+        message.action = "prepare"
+        message.message = message
+
+        str_message = message.__encode__()
+
+        self.cast_s.sendGB(str_message)
+
     def send_kick_message(self, message):
         kick_message = GBMessage()
 
@@ -194,15 +222,25 @@ class GBCASTManager():
     def recv_signal(self):
         user_to_kick = self.user_m.quit_user()
 
-        #self delete?
-        self.foundError(user_to_kick)
         #self detect
-        '''
-        read signal from the signal_pipe 
-        call remove user
-        '''
+        self.ebcast.foundError(user_to_kick)
+
     def recv_delete_msg(self, message, src):
+        message = self.ebcast.receiveErrorBroadCast(message)
+
+        kick_message = GBMessage()
+
+        kick_message.view_id = self.user_m.view_id
+        kick_message.user_id = self.UID
+        kick_message.action = "kick"
+        kick_message.message = message
+
+        str_message = kick_message.__encode__()
+
+        self.cast_s.sendGB(str_message, src)
+       
         return
+        '''
         self.lock_user_list.acquire()
         if user_to_kick in self.user_m.fetch_user_list():
             new_list = [user for user in self.user_m.fetch_user_list() if user != user_to_kick]
@@ -213,6 +251,7 @@ class GBCASTManager():
             #Better to use update instead of this
             #self.user_m.b.remove_addr(user_to_kick)
         self.lock_user_list.release()
+        '''
 
     def delete_user(self, user):
         #TODO: delete user

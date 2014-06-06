@@ -17,7 +17,7 @@ class EBCASTManager(object):
         self.userId = userId
 
     #To delete gbcManager's userlist
-    #self.delete_user(username)
+    #self.gbcManager.delete_user(username)
     def sendErrorBroadCast(self, errMsg):
         self.gbcManager.send_kick_message(errMsg)
 

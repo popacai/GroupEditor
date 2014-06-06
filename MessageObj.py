@@ -13,6 +13,7 @@ class MessageObj(object):
         self.oid = oid
         self.mid = mid
         self.delivered = False
+        self.discard = False
 
     def commit(self):
         self.delivered = True

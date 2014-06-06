@@ -21,14 +21,14 @@ class LogManager(object):
             self.prepared[sender] = [oid]
         self.mutex.release()
 
-    def insertDelivery(self, sender, oid):
+    def insertDelivery(self, sender, oid, mid):
         self.mutex.acquire()
         if sender in self.delivered:
             msgList = self.delivered[sender]
-            if not oid in msgList:
-                msgList.append(oid)
+            if not (oid, mid) in msgList:
+                msgList.append((oid, mid))
         else:
-            self.delivered[sender] = [oid]
+            self.delivered[sender] = [(oid, mid)]
         self.mutex.release()
 
     def removePrepare(self, sender, oid):
@@ -41,26 +41,27 @@ class LogManager(object):
                 del self.prepared[sender]
         self.mutex.release()
 
-    def updatePrepare(self, sender, oid):
+    def updatePrepare(self, sender, oid, mid):
         self.removePrepare(sender, oid)
-        self.insertDelivery(sender, oid)
+        self.insertDelivery(sender, oid, mid)
 
-    #0 for none, 1 for prepare, 2 for delivered
+    # None for none, 'p' for prepare, 'mid' for delivered
     def msgStatus(self, sender, oid):
         if sender in self.prepared:
             msgList = self.prepared[sender]
             if oid in msgList:
-                return 1
+                return 'p'
         if sender in self.delivered:
             msgList = self.delivered[sender]
-            if oid in msgList:
-                return 2
-        return 0
+            for pair in msgList:
+                if oid == pair[0]:
+                    return str(pair[1])
+        return None
 
 if __name__ == '__main__':
     m = LogManager()
-    m.prepared = {'a':[0, 1], 'b':[1]}
-    m.delivered = {'b':[0], 'c': [0, 1]}
+    m.prepared = {'a': [0, 1], 'b': [1]}
+    m.delivered = {'b': [(0, 1)], 'c': [(0, 2), (1, 3)]}
 
     m.insertPrepare('b', 2)
     print 'b_2: ', m.msgStatus('b', 2)
@@ -68,13 +69,9 @@ if __name__ == '__main__':
     print 'c_2: ', m.msgStatus('c', 2)
     print 'c_1: ', m.msgStatus('c', 1)
     print 'a_0: ', m.msgStatus('a', 0)
-    m.updatePrepare('a', 0)
+    m.updatePrepare('a', 0, 5)
     print 'a_0: ', m.msgStatus('a', 0)
     print 'a_1: ', m.msgStatus('a', 1)
     m.removePrepare('a', 1)
     print 'a_1: ', m.msgStatus('a', 1)
     print 'c_3: ', m.msgStatus('c', 3)
-
-
-
-

@@ -1,13 +1,13 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 from PIPE import PIPE
-# from CASTSelecter import CASTSelecter
+from CASTSelecter import CASTSelecter
 from Heap import Heap
 import threading
 from MessageObj import MessageObj
 from MessageObj import fromStr
-# from UserManager import UserManager
-# from LogManager import LogManager
+from UserManager import UserManager
+from LogManager import LogManager
 import copy
 
 
@@ -85,8 +85,13 @@ class ABCASTManager(object):
         self.receiverMutex.acquire()
         for (k, v) in self.responseReceiver.items():
             cList = v[0]
+            lastObj = v[1]
             if userId in cList:
                 cList.remove(userId)
+                if len(cList) == 0:
+                    if not lastObj is None:
+                        self._sendMessageObjBroadCast(MessageObj(self.userId, None, lastObj.oid, lastObj.mid, 'F'))
+                    del self.responseReceiver[msgObj.uniqueId()]
         self.receiverMutex.release()
         self.clientListMutex.acquire()
         self.clientList = self.clientManager.fetch_user_list()
@@ -134,8 +139,9 @@ class ABCASTManager(object):
                         cList.remove(msgObj.replier)
                         if not lastObj or lastObj.smallerThan(msgObj):
                             self.responseReceiver[msgObj.uniqueId()] = (cList, msgObj)
+                            lastObj = msgObj
                         if len(cList) == 0:
-                            self._sendMessageObjBroadCast(MessageObj(self.userId, None, msgObj.oid, msgObj.mid, 'F'))
+                            self._sendMessageObjBroadCast(MessageObj(self.userId, None, lastObj.oid, lastObj.mid, 'F'))
                             del self.responseReceiver[msgObj.uniqueId()]
                 self.receiverMutex.release()
             #for F::
@@ -145,12 +151,13 @@ class ABCASTManager(object):
                 if msgObj.sender in self.clientList:
                     self.heapMutex.acquire()
                     self.processQueue.update(msgObj.uniqueId(), msgObj.mid)
-                    self.logManager.updatePrepare(msgObj.sender, msgObj.oid)
+                    self.logManager.updatePrepare(msgObj.sender, msgObj.oid, msgObj.mid)
                     # print '%s is ready: %s' % (self.processQueue.top().uniqueId(), self.processQueue.top().delivered)
-                    while not self.processQueue.empty() and self.processQueue.top().delivered:
-                        committedObj = self.processQueue.pop()
-                        # print committedObj.content
-                        self.outputPipe.write(committedObj.content)
+                    while not self.processQueue.empty() and self.processQueue.top().delivered and not self.processQueue.top().discard:
+                        poppedObj = self.processQueue.pop()
+                        # print poppedObj.content
+                        if not poppedObj.discard:
+                            self.outputPipe.write(poppedObj.content)
                     self.heapMutex.release()
                 self.clientListMutex.release()
 

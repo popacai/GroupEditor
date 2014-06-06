@@ -14,13 +14,12 @@ import time
 
 if __name__ != "__main__":
     exit()
-
 # Test used only 
-# auto update the user_list
 class user_add(Thread):
-    def __init__(self, um):
+    def __init__(self, um, am):
         Thread.__init__(self)
         self.um = um
+        self.am = am
         
     def run(self):
         while True:
@@ -30,7 +29,11 @@ class user_add(Thread):
             self.um.view_id += 1
             self.um.update_user_list(_temp, self.um.view_id)
 
+            self.am.addUser(user)
+            print 'user_list:', self.um.fetch_user_list()
             #add_new_user_abcast_list(user)
+
+
 
 class read_from_abcast(Thread):
     def __init__(self, pipe):
@@ -52,15 +55,12 @@ def main():
     port = 10000 + index
     localaddr = (ip_addr, port)
 
-    user_id = user_id.ljust(10)
+    user_id = user_id.ljust(20)
 
     b = BroadCast()
     um = UserManager(b, localaddr, user_id)
 
     #Daemon threading for keeping adding the users 
-    ua = user_add(um)
-    ua.setDaemon(True)
-    ua.start()
     #auto UserManager update user list
 
     #Try to connect the other members
@@ -92,6 +92,14 @@ def main():
     #Init ABCAST
     #fake
     ab_m = ABCASTManager(user_id, t_cast_s, um, LogManager()) 
+    ab_m.start()
+
+    ab_m.addUser("123")
+
+    ua = user_add(um, ab_m)
+    ua.setDaemon(True)
+    ua.start()
+    print 'user_list', um.fetch_user_list()
     #ab_m = None
 
     #Init GBCAST
@@ -109,12 +117,17 @@ def main():
     #message 
     while True:
         message = raw_input()
-        if message is not "":
+        if message is "":
+            continue
+        if (message == "userlist"):
+            print "userManager", um.fetch_user_list()
+            print "abcast", ab_m.clientList
             continue
         if (message == "sync"):
             gb_m.send_user_dict_request()
-        else:
-            ab_m.write(message)
+            continue
+
+        ab_m.write(message)
             
 
     #Init abcast

@@ -265,7 +265,9 @@ class GBCASTManager():
         '''
 
     def delete_user(self, user):
-        #TODO: delete user
-        print 'delete user', user
+        print 'ERR', 'delete user', user
+        userlist = self.user_m.fetch_user_list()
+        userlist.remove(user)
+        self.user_m.update_user_list(userlist, self.user_m.view_id)
 
 

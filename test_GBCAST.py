@@ -91,7 +91,7 @@ def main():
     #Init ABCAST
     #fake
     ab_m = ABCASTManager(user_id, t_cast_s, um, LogManager()) 
-    ab_m = None
+#    ab_m = None
 
     #Init GBCAST
     gb_m = GBCASTManager(user_id,t_cast_s, um, ab_m)

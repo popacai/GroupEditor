@@ -26,6 +26,8 @@ class BroadCast():
         input_pipe = PIPE()
         self.input_pipes[addr] = input_pipe
 
+        if (sock == None):
+            return None
         self.mtcp.new_connect(sock, addr, input_pipe)
 
     def remove_addr(self, addr):

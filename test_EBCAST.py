@@ -42,7 +42,7 @@ def main():
     port = 10000 + index
     localaddr = (ip_addr, port)
 
-    user_id = user_id.ljust(20)
+    user_id = user_id.ljust(10)
 
     b = BroadCast()
     um = UserManager(b, localaddr, user_id)
@@ -60,7 +60,7 @@ def main():
         if i == index:
             continue #don't need to connect itself
 
-        remote_uid = str(i).ljust(20)
+        remote_uid = str(i).ljust(10)
 
         port = 10000 + i
         addr = (ip_addr, port)
@@ -70,17 +70,11 @@ def main():
         #if sock != None:
             #add_new_user_abcast_list(remote_uid)
     '''
-    offset = int(sys.argv[2])
-    remote_ip_addr = ("localhost", 10000 + offset)
 
-    remote_uid = str(offset).ljust(20)
-    sock = um.add_user(remote_ip_addr, remote_uid)
 
-    '''
     user_list = um.temp_user_list
     um.update_user_list(user_list.keys(), um.view_id + 1)
     user_list, view_id = um.get_user_list()
-    '''
 
     #Init CASTSelecter
     t_cast_s = CASTSelecter(b)
@@ -101,19 +95,12 @@ def main():
 
     print '====================================================='
     #message 
-    count = 0
     while True:
         message = raw_input()
         if (message == "sync"):
             gb_m.send_user_dict_request()
-        elif message == "test":
-            gb_m.test_clock(str(count))
-            count += 1
-        elif message == "userlist":
-            print gb_m.user_m.temp_user_list.keys()
         else:
-            pass
-
+            t_cast_s.sendGB(message)
 
     #Init abcast
 

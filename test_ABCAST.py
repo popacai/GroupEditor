@@ -91,7 +91,7 @@ def main():
     port = 10000 + index
     localaddr = (ip_addr, port)
 
-    user_id = user_id.ljust(10)
+    user_id = user_id.ljust(20)
 
     b = BroadCast()
     um = UserManager(b, localaddr, user_id)
@@ -101,7 +101,7 @@ def main():
         if i == index:
             continue #don't need to connect itself
 
-        remote_uid = str(i).ljust(10)
+        remote_uid = str(i).ljust(20)
 
         port = 10000 + i
         addr = (ip_addr, port)

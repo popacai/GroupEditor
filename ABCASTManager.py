@@ -82,6 +82,7 @@ class ABCASTManager(object):
         self.clientListMutex.release()
 
     def removeUser(self, userId):
+        print 'ABCASTManager remove user'
         self.receiverMutex.acquire()
         for (k, v) in self.responseReceiver.items():
             cList = v[0]
@@ -94,8 +95,10 @@ class ABCASTManager(object):
                     del self.responseReceiver[msgObj.uniqueId()]
         self.receiverMutex.release()
         self.clientListMutex.acquire()
+        print 'fetch user list from user manager'
         self.clientList = self.clientManager.fetch_user_list()
         self.clientListMutex.release()
+        print self.clientList
 
     def restoreData(self, userId, msgList):
         self.heapMutex.acquire()

@@ -3,7 +3,7 @@
 
 from UserManager import UserManager
 from CASTSelecter import CASTSelecter
-from AddrManager import AddrManager
+from EBCASTManager import EBCASTManager
 from GBMessage import GBMessage
 import json
 import threading
@@ -51,7 +51,7 @@ class GBCASTManager():
 
         self.status = 0 #use status machine to control
         #self.status = 1
-        pass
+        self.ebcast = EBCASTManager(self.abcast, self, self.UID)
 
     def update_user_dict(self, message):
         user_dict = json.loads(message)
@@ -135,7 +135,7 @@ class GBCASTManager():
                 return
             print 'kick', gb.message , "*"
             if (gb.user_id in self.user_m.fetch_user_list()):
-                self.delete_user(gb.message)
+                self.recv_delete_msg(gb.message)
 
         if (gb.action == "ask for dict"):
             if (gb.user_id == self.UID):
@@ -154,9 +154,6 @@ class GBCASTManager():
                     print 'error!', 'cannot join the group, try again'
                     self.status = 0
         if (gb.action == "prepare"):
-            #Read the message,
-            #update the usermanager user_list
-            #block abcast
             pass
 
         if (gb.action == "prepare-ok"):
@@ -197,14 +194,14 @@ class GBCASTManager():
     def recv_signal(self):
         user_to_kick = self.user_m.quit_user()
 
-        self.send_kick_message(user_to_kick)
         #self delete?
-        self.delete_user(user_to_kick)
+        self.foundError(user_to_kick)
+        #self detect
         '''
         read signal from the signal_pipe 
         call remove user
         '''
-    def delete_user(self, user_to_kick):
+    def recv_delete_msg(self, message, src):
         return
         self.lock_user_list.acquire()
         if user_to_kick in self.user_m.fetch_user_list():
@@ -216,5 +213,9 @@ class GBCASTManager():
             #Better to use update instead of this
             #self.user_m.b.remove_addr(user_to_kick)
         self.lock_user_list.release()
+
+    def delete_user(self, user):
+        #TODO: delete user
+        print 'delete user', user
 
 

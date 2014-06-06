@@ -16,8 +16,10 @@ class EBCASTManager(object):
         self.receiverMutex = threading.Lock()
         self.userId = userId
 
+    #To delete gbcManager's userlist
+    #self.delete_user(username)
     def sendErrorBroadCast(self, errMsg):
-        pass
+        self.gbcManager.send_kick_message(errMsg)
 
     def foundError(self, errUser):
         pass

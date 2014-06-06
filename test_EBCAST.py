@@ -32,6 +32,15 @@ class user_add(Thread):
 
             #add_new_user_abcast_list(user)
 
+class read_from_abcast(Thread):
+    def __init__(self, pipe):
+        Thread.__init__(self)
+        self.ab = pipe
+    def run(self):
+        while True:
+            print self.ab.read()
+
+
 
 #20 members at most
 def main():
@@ -93,6 +102,10 @@ def main():
     t_gbcast.start()
 
     print '====================================================='
+    #ABCAST READER
+    t_ab_reader = read_from_abcast(am)
+    t_ab_reader.setDaemon(True)
+    t_ab_reader.start()
     #message 
     while True:
         message = raw_input()

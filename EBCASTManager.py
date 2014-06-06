@@ -4,6 +4,7 @@ from LogManager import LogManager
 from ErrorMessageObject import *
 from ABCASTManager import ABCASTManager
 import threading
+import copy
 
 
 class EBCASTManager(object):
@@ -22,7 +23,19 @@ class EBCASTManager(object):
         self.gbcManager.send_kick_message(errMsg)
 
     def foundError(self, errUser):
-        pass
+        if errUser in self.abcManager.clientList:
+            self.gbcManager.delete_user(errUser)
+            self.abcManager.removeUser(errUser)
+            bcMsg = self.userId + '::' + errUser
+            oidList = logManager.prepare[errUser]
+            if not oidList is None:
+                msgContent = '_'.join([str(x) for x in oidList])
+                bcMsg = bcMsg + msgContent
+                cList = copy.deepcopy(self.abcManager.clientList)
+                self.receiverMutex.acquire()
+                responseReceiver[errUser] = ([(oid, -1) for oid in oidList], cList, False)
+                self.receiverMutex.release()
+                self.sendErrorBroadCast(bcMsg)
 
     def receiveErrorBroadCast(self, errMsg):
         errObj = fromString(errMsg)
@@ -30,15 +43,17 @@ class EBCASTManager(object):
         reply = errObj.sender + '::' + errObj.errorUser
         mList = []
         if errObj.errorUser in self.abcManager.clientList:
+            self.gbcManager.delete_user(errObj.errorUser)
             self.abcManager.removeUser(errObj.errorUser)
             bcMsg = self.userId + '::' + errObj.errorUser
             oidList = logManager.prepare[errObj.errorUser]
             if not oidList is None:
                 msgContent = '_'.join([str(x) for x in oidList])
                 bcMsg = bcMsg + msgContent
-
-            #todo::prepare error message and send
-            #todo::build receiver
+                self.receiverMutex.acquire()
+                responseReceiver[errUser] = ([(oid, -1) for oid in oidList], cList, False)
+                self.receiverMutex.release()
+                self.sendErrorBroadCast(bcMsg)
         for oid in errObj.msgList:
             status = logManager.msgStatus(errObj.errorUser, oid)
             if status is None:
@@ -69,6 +84,7 @@ class EBCASTManager(object):
                         self.sendErrorBroadCast(str(resendObj))
                     else:
                         self.abcManager.restoreData(errObj.errorUser, responseReceiver[errObj.errorUser][0])
+                        self.abcManager.logManager.removeUser(errObj.errorUser)
                         del responseReceiver[errObj.errorUser]
         self.receiverMutex.release()
 

@@ -61,7 +61,7 @@ class Heap(object):
         #     self.maxObj = obj
 
     def getAllObjects(self):
-        pass
+        return self.objects
 
     def _parseDown(self, idx):
         size = len(self.objects)

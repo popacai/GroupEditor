@@ -41,6 +41,12 @@ class LogManager(object):
                 del self.prepared[sender]
         self.mutex.release()
 
+    def removeUser(self, sender):
+        self.mutex.acquire()
+        if sender in self.prepared:
+            del self.prepared[sender]
+        self.mutex.release()
+
     def updatePrepare(self, sender, oid, mid):
         self.removePrepare(sender, oid)
         self.insertDelivery(sender, oid, mid)

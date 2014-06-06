@@ -98,7 +98,17 @@ class ABCASTManager(object):
         self.clientListMutex.release()
 
     def restoreData(self, userId, msgList):
-        pass
+        self.heapMutex.acquire()
+        for pair in msgList:
+            msgKey = userId + '_' + str(pair[0])
+            if pair[1] >= 0:
+                self.processQueue.update(msgKey, pair[1])
+            else:
+                for obj in self.processQueue.getAllObjects():
+                    if obj.uniqueId() == msgKey:
+                        obj.discard = True
+                    break
+        self.heapMutex.release()
 
     #block thread
     def _startReceiveMessage(self):

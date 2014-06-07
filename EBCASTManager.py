@@ -44,10 +44,17 @@ class EBCASTManager(object):
         reply = errObj.sender + '::' + errObj.errorUser
         mList = []
         self.receiverMutex.acquire()
+
         if errObj.errorUser in self.abcManager.clientList:
             print 'first time'
             self.gbcManager.delete_user(errObj.errorUser)
             self.abcManager.removeUser(errObj.errorUser)
+
+            for waitUser in self.responseReceiver:
+                if errObj.errorUser in waitUser[1]:
+                    waitUser[1].remove(errObj.errorUser)
+                waitUser[2] = True
+
             bcMsg = self.userId + '::' + errObj.errorUser
             if errObj.errorUser in logManager.prepare:
                 oidList = logManager.prepare[errObj.errorUser]
@@ -55,6 +62,7 @@ class EBCASTManager(object):
                 bcMsg = bcMsg + msgContent
                 self.responseReceiver[errUser] = ([(oid, -1) for oid in oidList], cList, False)
                 self.sendErrorBroadCast(bcMsg)
+
         for oid in errObj.msgList:
             status = logManager.msgStatus(errObj.errorUser, oid)
             if status is None:
@@ -63,6 +71,7 @@ class EBCASTManager(object):
                 mList.add(str(-1))
             else:
                 mList.add(status)
+
         self.receiverMutex.release()
         if len(mList) > 0:
             reply = reply + '::' + '_'.join(mList)

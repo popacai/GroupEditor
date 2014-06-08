@@ -91,29 +91,26 @@ class BroadCast():
         return self.broadcast(message)
     def broadcast(self, message): #return how many message has been sent
         self.sending_lock.acquire()
-        print 'start to broadcast'
+        #print 'start to broadcast'
         for addr in self.input_pipes:
-            print 'pipe selection'
+            #print 'pipe selection'
             pipe = self.input_pipes[addr]
-            print 'end of pipe selection'
+            #print 'end of pipe selection'
             if (self.socks[addr] == None):
-                print 'write to locol'
+                #print 'write to locol'
                 self.output_pipe.write(message)
-                print 'write locol succ'
+                #print 'write locol succ'
             else:
-            #try:
-                print 'pipe write'
-                pipe.write(message)
-                print 'pipe write succ'
-
-            #except:
-                #print 'critical excetion, pipe error'
-                #exit()
-                #self.sending_lock.release()
-                #self.remove_addr(addr)
+                try:
+                    #print 'pipe write'
+                    pipe.write(message)
+                    #print 'pipe write succ'
+                except:
+                    self.sending_lock.release()
+                    self.remove_addr(addr)
 
         self.sending_lock.release()
-        print 'end of broadcast'
+        #print 'end of broadcast'
         return len(self.input_pipes)
 
     def get_signal_message(self):

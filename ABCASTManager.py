@@ -78,7 +78,9 @@ class ABCASTManager(object):
         return True
 
     def resume(self):
-        pass
+        self.pauseFlag = False
+        if not self.sendProc.isAlive():
+            self.sendProc.start()
 
     def addUser(self, userId):
         self.clientListMutex.acquire()
@@ -188,9 +190,9 @@ class ABCASTManager(object):
         if msgObj.type == 'A':
             #are these locks neccessary?
             self.receiverMutex.acquire()
-            self.clientListMutex.acquire()
+            # self.clientListMutex.acquire()
             clist = copy.deepcopy(self.clientList)
-            self.clientListMutex.release()
+            # self.clientListMutex.release()
             self.responseReceiver[msgObj.uniqueId()] = (clist, None)
             self.receiverMutex.release()
         if target is None:

@@ -188,6 +188,15 @@ def main():
         
     #Init abcast
 
+    while True:
+        message = raw_input()
+        if (message == "sync"):
+            print [x.uniqueId() for x in am.processQueue.objects]
+        try:
+            exec(message)
+        except:
+            print 'error'
+
 if __name__ == "__main__":
     main()
 

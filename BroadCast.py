@@ -91,6 +91,7 @@ class BroadCast():
         return self.broadcast(message)
     def broadcast(self, message): #return how many message has been sent
         self.sending_lock.acquire()
+        print 'start to broadcast'
         for addr in self.input_pipes:
             pipe = self.input_pipes[addr]
             if (self.socks[addr] == None):
@@ -98,11 +99,15 @@ class BroadCast():
                 continue
 
             try:
+                print 'pipe write'
                 pipe.write(message)
+                print 'pipe write succ'
             except:
+                print 'critical excetion, pipe error'
                 self.sending_lock.release()
                 self.remove_addr(addr)
         self.sending_lock.release()
+        print 'end of broadcast'
         return len(self.input_pipes)
 
     def get_signal_message(self):

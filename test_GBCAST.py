@@ -116,6 +116,9 @@ def main():
             gb_m.send_prepare()
         elif message == "prepare-ok":
             gb_m.send_prepare_ok()
+        elif message == "abcast":
+            for i in xrange(10):
+                ab_m.write(str(i))
         else:
             pass
 

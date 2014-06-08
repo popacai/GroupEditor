@@ -185,13 +185,13 @@ class GBCASTManager():
             if (view_id) is equal
                 send all the data to that server
         '''
-    def send_prepare_ok(self):
-        message = GBMessage()
+    def send_prepare_ok(self, gb):
+        message = gb
 
-        message.view_id = self.user_m.view_id
-        message.user_id = self.UID
+        #message.view_id = self.user_m.view_id
+        #message.user_id = self.UID
         message.action = "prepare-ok"
-        #message.message = 
+        #message.message = str_user_list
 
         str_message = message.__encode__()
 
@@ -235,7 +235,6 @@ class GBCASTManager():
         #self detect
         print "ERR", "self detect", user_to_kick
         self.ebcast.foundError(user_to_kick)
-        print "ERR", "foundError return"
 
     def recv_delete_msg(self, message, src):
         print 'ERR', "RECV delete message from", src, "msg:", message

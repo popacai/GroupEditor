@@ -79,8 +79,11 @@ class read_from_abcast(Thread):
         Thread.__init__(self)
         self.ab = pipe
     def run(self):
+        count = 0
         while True:
             print self.ab.read()
+            count += 1
+            print count
 
 #20 members at most
 def main():
@@ -159,7 +162,8 @@ def main():
         if (message == ""):
             continue
         #t_cast_s.sendCB(message)
-        am.write(message)
+        for i in xrange(1000):
+            am.write(message + str(i))
         
     #Init abcast
 

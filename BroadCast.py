@@ -93,15 +93,18 @@ class BroadCast():
         self.sending_lock.acquire()
         print 'start to broadcast'
         for addr in self.input_pipes:
+            print 'pipe selection'
             pipe = self.input_pipes[addr]
+            print 'end of pipe selection'
             if (self.socks[addr] == None):
+                print 'write to locol'
                 self.output_pipe.write(message)
-                continue
-
+                print 'write locol succ'
+            else:
             #try:
-            print 'pipe write'
-            pipe.write(message)
-            print 'pipe write succ'
+                print 'pipe write'
+                pipe.write(message)
+                print 'pipe write succ'
 
             #except:
                 #print 'critical excetion, pipe error'

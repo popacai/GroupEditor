@@ -13,19 +13,19 @@ class PIPE():
 
     def read(self):
         #return os.read(self.r, 1024)
-        self.rlock.acquire()
+        #self.rlock.acquire()
         data = self.reader.readline()[:-1]
         data = data.replace("\x01", "\n")
-        self.rlock.release()
+        #self.rlock.release()
         return data
     def write(self, data):
         #os.write(self.w, data)
         #return
-        self.wlock.acquire()
+        #self.wlock.acquire()
 
         data = data.replace("\n", "\x01")
         self.writer.write(data + "\n")
-        self.wlock.release()
+        #self.wlock.release()
     def close(self):
         try:
             self.writer.close()

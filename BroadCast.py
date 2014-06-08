@@ -5,6 +5,7 @@
 
 from MTCP import MTCP
 from PIPE import PIPE
+import threading
 
 class BroadCast():
     def __init__(self): 
@@ -16,6 +17,7 @@ class BroadCast():
         self.socks = {} #key=addr, value=socket
         self.input_pipes = {} #key=addr, value=input_pipes
 
+        self.sending_lock = threading.Lock()
     def add_addr(self, addr, sock):
         if addr in self.socks:
             print addr, "already in the socket list"
@@ -70,30 +72,45 @@ class BroadCast():
         return self.output_pipe.read()
 
     def send(self, addr, message): #return the input_pipe
+        self.sending_lock.acquire()
         if self.socks[addr] == None:
             self.output_pipe.write(message)
+            self.sending_lock.release()
             return self.output_pipe
         if addr not in self.input_pipes:
             print addr, "not in input_pipe"
+            self.sending_lock.release()
             return None
 
         input_pipe = self.input_pipes[addr]
         input_pipe.write(message)
+        self.sending_lock.release()
         return input_pipe
 
     def sendall(self,message):
         return self.broadcast(message)
     def broadcast(self, message): #return how many message has been sent
+        self.sending_lock.acquire()
+        #print 'start to broadcast'
         for addr in self.input_pipes:
+            #print 'pipe selection'
             pipe = self.input_pipes[addr]
+            #print 'end of pipe selection'
             if (self.socks[addr] == None):
+                #print 'write to locol'
                 self.output_pipe.write(message)
-                continue
+                #print 'write locol succ'
+            else:
+                try:
+                    #print 'pipe write'
+                    pipe.write(message)
+                    #print 'pipe write succ'
+                except:
+                    self.sending_lock.release()
+                    self.remove_addr(addr)
 
-            try:
-                pipe.write(message)
-            except:
-                self.remove_addr(addr)
+        self.sending_lock.release()
+        #print 'end of broadcast'
         return len(self.input_pipes)
 
     def get_signal_message(self):

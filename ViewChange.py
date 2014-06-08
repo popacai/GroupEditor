@@ -74,10 +74,15 @@ if __name__ == "__main__":
         def block():
             print 'block local'
            
+    #Prepare OK
     vc = ViewChange(FakeABCAST(), FakeGBCAST())
     gb = GBMessage()
-    gb.view_id = 0
+    gb.view_id = 1
+    gb.user_id = 'a'
     gb.message = json.dumps(['a', 'b', 'c', 'd'])
     vc.prepare(gb)
+
+
+    #
 
 

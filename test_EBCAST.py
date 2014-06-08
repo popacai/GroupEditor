@@ -126,8 +126,8 @@ def main():
         if (message == "sync"):
             gb_m.send_user_dict_request()
             continue
-
-        ab_m.write(message)
+        for i in range(1000):
+            ab_m.write(message)
             
 
     #Init abcast

@@ -119,6 +119,11 @@ def main():
         else:
             pass
 
+        try:
+            exec(message)
+        except:
+            print 'error'
+
 
     #Init abcast
 

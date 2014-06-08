@@ -30,7 +30,7 @@ import time
 if __name__ != "__main__":
     exit()
 
-# Test used only 
+# Test only
 class user_add(Thread):
     def __init__(self, um, am):
         Thread.__init__(self)

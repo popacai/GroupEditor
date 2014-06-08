@@ -102,11 +102,12 @@ class BroadCast():
             print 'pipe write'
             pipe.write(message)
             print 'pipe write succ'
-        #except:
-            print 'critical excetion, pipe error'
-            exit()
-            self.sending_lock.release()
-            self.remove_addr(addr)
+
+            #except:
+                #print 'critical excetion, pipe error'
+                #exit()
+                #self.sending_lock.release()
+                #self.remove_addr(addr)
 
         self.sending_lock.release()
         print 'end of broadcast'

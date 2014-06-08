@@ -50,6 +50,9 @@ class ABCASTManager(object):
         self.recvProc = CustomThread(self._startReceiveMessage)
         self.sendProc = CustomThread(self._startSendBroadCast)
 
+        self.pauseFlag = False
+        self.waitCondition = threading.Condition()
+
     def start(self):
         self.recvProc.setDaemon(True)
         self.sendProc.setDaemon(True)
@@ -63,15 +66,16 @@ class ABCASTManager(object):
     def write(self, message):
         self.inputPipe.write(message)
 
-    def quit(self):
-        pass
-
     #for CT
     def block(self):
-        pass
+        self.pauseFlag = True
 
     def waitAllDone(self):
-        pass
+        if not self.processQueue.empty() or len(self.responseReceiver) > 0:
+            self.waitCondition.acquire()
+            self.waitCondition.wait()
+            self.waitCondition.release()
+        return True
 
     def resume(self):
         pass
@@ -171,6 +175,11 @@ class ABCASTManager(object):
                         # print poppedObj.content
                         if not poppedObj.discard:
                             self.outputPipe.write(poppedObj.content)
+                            self.logManager.appendRecord(poppedObj.content)
+                        if self.processQueue.empty() and len(self.responseReceiver) == 0:
+                            self.waitCondition.acquire()
+                            self.waitCondition.notify()
+                            self.waitCondition.release()
                     self.heapMutex.release()
                 self.clientListMutex.release()
 
@@ -193,7 +202,7 @@ class ABCASTManager(object):
 
     #block thread
     def _startSendBroadCast(self):
-        while True:
+        while not self.pauseFlag:
             msg = self.inputPipe.read()
             self.clockMutex.acquire()
             self.clock += 1

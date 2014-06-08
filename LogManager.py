@@ -10,6 +10,7 @@ class LogManager(object):
         self.mutex = threading.Lock()
         self.prepared = {}
         self.delivered = {}
+        self.recordList = []
 
     def insertPrepare(self, sender, oid):
         self.mutex.acquire()
@@ -50,6 +51,9 @@ class LogManager(object):
     def updatePrepare(self, sender, oid, mid):
         self.removePrepare(sender, oid)
         self.insertDelivery(sender, oid, mid)
+
+    def appendRecord(self, record):
+        self.recordList.append(record)
 
     # None for none, 'p' for prepare, 'mid' for delivered
     def msgStatus(self, sender, oid):

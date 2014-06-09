@@ -56,10 +56,24 @@ class ViewChange():
 
         return all_done
         #recv a prepare-ok message
+    def check_log(self):
+        biggest_view_id = 0
+        for view_id in self.log:
+            if biggest_view_id < view_id:
+                biggest_view_id = view_id
+
+        log = self.log[biggest_view_id]
+
+        user_list = self.gbcast.user_m.fetch_user_list()
+        for user in user_list:
+            if user not in log:
+                return False
+        return True
 
     def insert_into_log(self, gb, new_user):
         #view_id = str(gb.view_id) + new_user
-        view_id = str(gb.view_id).ljust(10) + new_user
+        #view_id = str(gb.view_id).ljust(10) + new_user
+        #view_id = gb.view_id
         if gb.view_id not in self.log:
             self.log[gb.view_id] = {}
 

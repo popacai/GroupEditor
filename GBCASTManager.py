@@ -169,10 +169,12 @@ class GBCASTManager():
             print 'uid', gb.user_id
             print 'msg', gb.message
             if (self.viewchange.prepare_ok(gb)):
-                print 'abcast resume'
-                user_list = json.loads(gb.message)
+
+                #user_list = json.loads(gb.message)
                 #self.user_m.uate_user_list(user_list)
+                self.abcast.addUser("123")
                 
+                print 'abcast resume'
                 #self.abcast.resume()
 
 
@@ -294,6 +296,16 @@ class GBCASTManager():
         userlist = self.user_m.fetch_user_list()
         userlist.remove(user)
         self.user_m.update_user_list(userlist, self.user_m.view_id)
+        self.addrmanager.remove_dict(user)
         print 'ERR', 'delete user done'
+    
+    def recheck_join_status(self):
+        self.cond.acquire()
+        self.cond.wait()
+        self.cond.release()
+        if self.viewchange.check_log():
+            self.abcast.addUser("123")
+            #self.abcast.resume()
+            print 'abcast resume'
 
 

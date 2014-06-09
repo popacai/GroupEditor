@@ -32,6 +32,15 @@ class user_add(Thread):
 
             #add_new_user_abcast_list(user)
 
+class read_from_abcast(Thread):
+    def __init__(self, pipe):
+        Thread.__init__(self)
+        self.ab = pipe
+    def run(self):
+        while True:
+            print self.ab.read()
+
+
 
 #20 members at most
 def main():
@@ -91,7 +100,13 @@ def main():
     #Init ABCAST
     #fake
     ab_m = ABCASTManager(user_id, t_cast_s, um, LogManager()) 
-#    ab_m = None
+    ab_m.start()
+
+
+    #ABCAST Reader
+    t_ab_reader = read_from_abcast(ab_m)
+    t_ab_reader.setDaemon(True)
+    t_ab_reader.start()
 
     #Init GBCAST
     gb_m = GBCASTManager(user_id,t_cast_s, um, ab_m)
@@ -111,12 +126,14 @@ def main():
             gb_m.test_clock(str(count))
             count += 1
         elif message == "userlist":
-            print gb_m.user_m.temp_user_list.keys()
+            #print gb_m.user_m.temp_user_list.keys()
+            print gb_m.user_m.get_user_list()
         elif message == "prepare":
             gb_m.send_prepare()
         elif message == "prepare-ok":
             gb_m.send_prepare_ok()
         elif message == "abcast":
+            print 'abcast'
             for i in xrange(10):
                 ab_m.write(str(i))
         else:

@@ -6,6 +6,7 @@ import json
 from GBMessage import GBMessage
 from UserManager import UserManager
 import time
+import random
 
 class wait_to_send_prepare_ok(Thread):
     def __init__(self, abcast, gbcast, gb):
@@ -14,9 +15,10 @@ class wait_to_send_prepare_ok(Thread):
         self.gbcast = gbcast
         self.gb = gb # delay to send the gb message
     def run(self):
-        #self.abcast.wait_done()
-        #self.abcast.update_user_list()
-        time.sleep(1)
+        self.abcast.waitAllDone()
+        t = random.randint(1,5)
+        print 'wait,',  t
+        time.sleep(t)
         self.gbcast.send_prepare_ok(self.gb)
 
 class ViewChange():
@@ -35,7 +37,7 @@ class ViewChange():
             user_list = user_list + self.gbcast.user_m.fetch_user_list()
             self.gbcast.user_m.update_user_list(user_list, gb.view_id)
             print 'abcast block'
-            #self.abcast.block()
+            self.abcast.block()
             w = wait_to_send_prepare_ok(self.abcast, self.gbcast, gb)
             w.setDaemon(True)
             w.start()

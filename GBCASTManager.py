@@ -175,7 +175,7 @@ class GBCASTManager():
                 self.abcast.addUser("123")
                 
                 print 'abcast resume'
-                #self.abcast.resume()
+                self.abcast.resume()
 
 
         #check whether to prepare OK
@@ -305,7 +305,7 @@ class GBCASTManager():
         self.cond.release()
         if self.viewchange.check_log():
             self.abcast.addUser("123")
-            #self.abcast.resume()
+            self.abcast.resume()
             print 'abcast resume'
 
 

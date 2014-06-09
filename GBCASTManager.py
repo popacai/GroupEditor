@@ -146,10 +146,11 @@ class GBCASTManager():
                 pass
             else:
                 self.update_user_dict(gb.message)
-                #pass
                 self.send_user_dict()
 
         if (gb.action == "dict"):
+            if (gb.view_id > self.user_m.view_id):
+                self.user_m.view_id = gb.view_id
             self.update_user_dict(gb.message)
             if self.status == 1:
                 if (self.connect_user_dict()):
@@ -164,7 +165,15 @@ class GBCASTManager():
                 print 'PREPARE', "old view id", gb.view_id
 
         if (gb.action == "prepare-ok"):
-            pass
+            print 'vid', gb.view_id
+            print 'uid', gb.user_id
+            print 'msg', gb.message
+            if (self.viewchange.prepare_ok(gb)):
+                print 'abcast resume'
+                user_list = json.loads(gb.message)
+                #self.user_m.uate_user_list(user_list)
+                
+                #self.abcast.resume()
 
 
         #check whether to prepare OK
@@ -188,16 +197,22 @@ class GBCASTManager():
     def send_prepare_ok(self, gb):
         message = gb
 
-        #message.view_id = self.user_m.view_id
-        #message.user_id = self.UID
+        message.view_id = self.user_m.view_id
+        message.user_id = self.UID
         message.action = "prepare-ok"
         #message.message = str_user_list
+        print 'ok', message.message
 
         str_message = message.__encode__()
 
         self.cast_s.sendGB(str_message)
 
     def send_prepare(self):
+        user_list = self.addrmanager.user_dict.keys()
+        user_list.remove(self.UID)
+        new_user_list = user_list + [self.UID]
+        self.user_m.update_user_list(new_user_list, self.user_m.view_id + 1)
+
         message = GBMessage()
 
         message.view_id = self.user_m.view_id + 1
@@ -205,7 +220,9 @@ class GBCASTManager():
         message.user_id = self.UID
         message.action = "prepare"
 
-        new_user_list = self.user_m.fetch_user_list().append(self.UID)
+        user_list = self.addrmanager.user_dict.keys()
+        user_list.remove(self.UID)
+        new_user_list = user_list + [self.UID]
         str_json = json.dumps(new_user_list)
         print "PREPARE", "new_user_list", new_user_list
 

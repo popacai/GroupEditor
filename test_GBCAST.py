@@ -27,8 +27,8 @@ class user_add(Thread):
             user = self.um.new_user()
             _temp = self.um.temp_user_list.keys()
             _temp.append(user)
-            self.um.view_id += 1
-            self.um.update_user_list(_temp, self.um.view_id)
+            #self.um.view_id += 1
+            #self.um.update_user_list(_temp, self.um.view_id)
 
             #add_new_user_abcast_list(user)
 

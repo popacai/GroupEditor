@@ -10,6 +10,9 @@ class AddrManager():
         for user in user_dict:
             if user not in self.user_dict:
                 self.user_dict[user] = user_dict[user]
+    def remove_dict(self, user_id):
+        if user_id in self.user_dict:
+            del self.user_dict[user_id]
 
     def get_dict(self):
         return self.user_dict

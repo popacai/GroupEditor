@@ -80,6 +80,8 @@ class ABCASTManager(object):
     def resume(self):
         self.pauseFlag = False
         if not self.sendProc.isAlive():
+            self.sendProc = CustomThread(self._startSendBroadCast)
+            self.sendProc.setDaemon(True)
             self.sendProc.start()
 
     def addUser(self, userId):

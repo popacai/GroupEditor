@@ -141,6 +141,8 @@ class GBCASTManager():
             if (gb.view_id < self.user_m.view_id):
                 print gb.view_id, self.user_m.view_id, ' view id is too old' 
                 return
+            if (gb.view_id > self.user_m.view_id):
+                self.user_m.update_user_dict(self.user_m.fetch_user_list(), gb.view_id)
             print 'kick', gb.message , "*"
             if (gb.user_id in self.user_m.fetch_user_list()):
                 self.recv_delete_msg(gb.message, gb.user_id)
@@ -263,12 +265,16 @@ class GBCASTManager():
 
 
     def recv_signal(self):
+
+
         user_to_kick = self.user_m.quit_user()
 
         #self detect
         print "ERR", "self detect", user_to_kick
         self.ebcast.foundError(user_to_kick)
 
+        #TEMP
+        self.delete_user(user_to_kick)
     def recv_delete_msg(self, message, src):
         print 'ERR', "RECV delete message from", src, "msg:", message
         trim_message = message[1:]
@@ -308,8 +314,13 @@ class GBCASTManager():
     def delete_user(self, user):
         print 'ERR', 'delete user', user
         userlist = self.user_m.fetch_user_list()
-        userlist.remove(user)
+        try:
+            userlist.remove(user)
+        except:
+            print user , 'is not in the userlist'
+
         self.user_m.update_user_list(userlist, self.user_m.view_id)
+
         self.addrmanager.remove_dict(user)
         print 'ERR', 'delete user done'
     

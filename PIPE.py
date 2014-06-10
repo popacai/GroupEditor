@@ -41,11 +41,50 @@ class PIPE():
 
 
 if __name__ == "__main__":
-    p = PIPE()
-    for i in range(10):
-        p.write(str(i) * 100)
-    for i in range(9):
-        print p.read()+"*"
-    p.close()
-    print p.read()+"*"
+    from threading import Thread
+    count = 0
+    global count
+    class T(Thread):
+        def __init__(self, pipe):
+            Thread.__init__(self)
+            self.pipe = pipe
+        def run(self):
+            global count
+            while True:
+                print self.pipe.read()
+                count -= 1
+    class W(Thread):
+        def __init__(self, pipe):
+            Thread.__init__(self)
+            self.pipe = pipe
+        def run(self):
+            global count
+            i = 0
+            while True:
+                self.pipe.write(str(i))
+                count -= 1
+                i += 1
+
+
+    pipe = PIPE()
+    t = T(pipe)
+    t.setDaemon(True)
+    t.start()
+
+    t2 = T(pipe)
+    t2.setDaemon(True)
+    t2.start()
+
+    w = W(pipe)
+    w.setDaemon(True)
+    w.start()
+
+    i = 0
+    while True:
+        if (count > 20):
+            continue
+        pipe.write(str(i))
+        count += 1
+        i += 1
+
 

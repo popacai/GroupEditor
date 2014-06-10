@@ -45,14 +45,26 @@ class read_from_abcast(Thread):
 #20 members at most
 def main():
     user_id = sys.argv[1]
-    index = int(user_id)
+    ip_addr, port = user_id.split(":")
+    if len(ip_addr) == 0:
+        ip_addr = '0.0.0.0'
+
+    port = int(port)
 
     #Port = 10000 + index
-    ip_addr = "localhost"
-    port = 10000 + index
-    localaddr = (ip_addr, port)
+    ip_addr = (ip_addr, port)
+    localaddr = ip_addr
+    user_id = str(ip_addr).ljust(20)
+    user_id = user_id.replace(',', ':')
 
-    user_id = user_id.ljust(20)
+
+    remote_ip, remote_port = sys.argv[2].split(":")
+    remote_port = int(remote_port)
+
+    remote_ip_addr = (remote_ip, remote_port)
+    remote_uid = str(remote_ip_addr).ljust(20)
+    remote_uid = remote_uid.replace(',', ':')
+
 
     b = BroadCast()
     um = UserManager(b, localaddr, user_id)
@@ -80,10 +92,10 @@ def main():
         #if sock != None:
             #add_new_user_abcast_list(remote_uid)
     '''
-    offset = int(sys.argv[2])
-    remote_ip_addr = ("localhost", 10000 + offset)
+    #offset = int(sys.argv[2])
+    #remote_ip_addr = ("localhost", 10000 + offset)
 
-    remote_uid = str(offset).ljust(20)
+    #remote_uid = str(offset).ljust(20)
     sock = um.add_user(remote_ip_addr, remote_uid)
 
     '''

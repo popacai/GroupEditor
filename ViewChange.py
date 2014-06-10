@@ -4,56 +4,104 @@
 from threading import Thread
 import json
 from GBMessage import GBMessage
+from UserManager import UserManager
+import time
+import random
 
-class ViewChange(Thread):
-    def __init__(self, abcast, gbcast):
+class wait_to_send_prepare_ok(Thread):
+    def __init__(self, abcast, gbcast, gb):
         Thread.__init__(self)
+        self.abcast = abcast
+        self.gbcast = gbcast
+        self.gb = gb # delay to send the gb message
+    def run(self):
+        self.abcast.waitAllDone()
+        t = random.randint(1,5)
+        print 'wait,',  t
+        time.sleep(t)
+        self.gbcast.send_prepare_ok(self.gb)
+
+
+class ViewChange():
+    def __init__(self, abcast, gbcast):
+        #Thread.__init__(self)
         self.view_id = 0
         self.abcast = abcast
         self.gbcast = gbcast
         self.log = {}
+        self.joiner = False
 
     def prepare(self, gb):
         #Be called if recv a prepare
         #Sender and Recver
-        if (gb.view_id >= self.view_id):
+        if (gb.view_id > self.view_id):
+            user_list = json.loads(gb.message)
+            user_list = user_list + self.gbcast.user_m.fetch_user_list()
+            self.gbcast.user_m.update_user_list(user_list, gb.view_id)
+            print 'abcast block'
+            self.abcast.block()
 
-
-            self.gbcast.send_prepare_ok(gb)
-            pass
+            if self.joiner == False:
+                w = wait_to_send_prepare_ok(self.abcast, self.gbcast, gb)
+            else:
+                pass
+                #wait to fetch
+            w.setDaemon(True)
+            w.start()
         else:
-            pass
+            print 'old view'
 
-    def prepare_ok(self, gb, new_user):
+    def prepare_ok(self, gb):
+        new_user = ""
         all_done = False
         if (gb.view_id >= self.view_id):
-
             user_list = json.loads(gb.message)
             new_user = user_list[-1]
-            if (insert_into_log(gb), new_user):
+            if (self.insert_into_log(gb, new_user)):
+                self.gbcast.status = 0
                 all_done = True
         else:
             #old message
             pass
 
+        if all_done:
+            self.joiner = False
+
         return all_done
         #recv a prepare-ok message
+    def check_log(self):
+        biggest_view_id = 0
+        for view_id in self.log:
+            if biggest_view_id < view_id:
+                biggest_view_id = view_id
 
-    def insert_into_log(self, gb, new_user):
-        view_id = str(gb.view_id) + new_user
-        if gb.view_id not in self.log:
-            self.log[view_id] = {}
+        log = self.log[biggest_view_id]
 
-        log = self.log[view_id]
-
-        log[gb.user_id] = 1
-
-        #check status?
         user_list = self.gbcast.user_m.fetch_user_list()
         for user in user_list:
             if user not in log:
                 return False
         return True
+
+    def insert_into_log(self, gb, new_user):
+        #view_id = str(gb.view_id) + new_user
+        #view_id = str(gb.view_id).ljust(10) + new_user
+        #view_id = gb.view_id
+        if gb.view_id not in self.log:
+            self.log[gb.view_id] = {}
+
+        self.log[gb.view_id][gb.user_id] = 1
+        log = self.log[gb.view_id]
+
+        #check status?
+        return self.check_log()
+        '''
+        user_list = self.gbcast.user_m.fetch_user_list()
+        for user in user_list:
+            if user not in log:
+                return False
+        return True
+        '''
     def done(self):
         pass
 

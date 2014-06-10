@@ -73,6 +73,10 @@ class GBCASTManager():
         str_message = request_message.__encode__()
         self.cast_s.sendGB(str_message)
 
+        if (len(self.user_m.temp_user_list.keys()) == 1):
+            self.status = 2
+
+
     def send_user_dict(self):
         user_dict = self.addrmanager.get_dict()
         #dumps to json format
@@ -143,6 +147,7 @@ class GBCASTManager():
 
         if (gb.action == "ask for dict"):
             if (gb.user_id == self.UID):
+                #self.send_user_dict()
                 pass
             else:
                 self.update_user_dict(gb.message)
@@ -158,6 +163,13 @@ class GBCASTManager():
                 else:
                     print 'error!', 'cannot join the group, try again'
                     self.status = 0
+            print 'status', self.status
+
+        if (self.status == 2):
+            print 'ready to send prepare'
+            self.send_prepare()
+            
+
         if (gb.action == "prepare"):
             if gb.view_id > self.user_m.view_id:
                 self.viewchange.prepare(gb)
@@ -207,9 +219,11 @@ class GBCASTManager():
 
         str_message = message.__encode__()
 
+        self.status = 11 
         self.cast_s.sendGB(str_message)
 
     def send_prepare(self):
+        self.status = 10
         user_list = self.addrmanager.user_dict.keys()
         user_list.remove(self.UID)
         new_user_list = user_list + [self.UID]

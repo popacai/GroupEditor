@@ -136,13 +136,17 @@ def main():
             print 'abcast'
             for i in xrange(10):
                 ab_m.write(str(i))
+        elif message == "command":
+            while True:
+                message = raw_input()
+                if (message == "exit"):
+                    break
+                try:
+                    exec(message)
+                except:
+                    print 'error'
         else:
-            pass
-
-        try:
-            exec(message)
-        except:
-            print 'error'
+            ab_m.write(message)
 
 
     #Init abcast

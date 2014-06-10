@@ -21,6 +21,7 @@ class wait_to_send_prepare_ok(Thread):
         time.sleep(t)
         self.gbcast.send_prepare_ok(self.gb)
 
+
 class ViewChange():
     def __init__(self, abcast, gbcast):
         #Thread.__init__(self)
@@ -28,6 +29,7 @@ class ViewChange():
         self.abcast = abcast
         self.gbcast = gbcast
         self.log = {}
+        self.joiner = False
 
     def prepare(self, gb):
         #Be called if recv a prepare
@@ -38,7 +40,12 @@ class ViewChange():
             self.gbcast.user_m.update_user_list(user_list, gb.view_id)
             print 'abcast block'
             self.abcast.block()
-            w = wait_to_send_prepare_ok(self.abcast, self.gbcast, gb)
+
+            if self.joiner == False:
+                w = wait_to_send_prepare_ok(self.abcast, self.gbcast, gb)
+            else:
+                pass
+                #wait to fetch
             w.setDaemon(True)
             w.start()
         else:
@@ -51,10 +58,14 @@ class ViewChange():
             user_list = json.loads(gb.message)
             new_user = user_list[-1]
             if (self.insert_into_log(gb, new_user)):
+                self.gbcast.status = 0
                 all_done = True
         else:
             #old message
             pass
+
+        if all_done:
+            self.joiner = False
 
         return all_done
         #recv a prepare-ok message
@@ -83,11 +94,14 @@ class ViewChange():
         log = self.log[gb.view_id]
 
         #check status?
+        return self.check_log()
+        '''
         user_list = self.gbcast.user_m.fetch_user_list()
         for user in user_list:
             if user not in log:
                 return False
         return True
+        '''
     def done(self):
         pass
 

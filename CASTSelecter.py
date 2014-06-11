@@ -18,14 +18,12 @@ class CASTSelecter(Thread):
         self.abpipe = PIPE()
         self.b = broadcast
     def sendCB(self, data, addr = None):
-        time.sleep(0.01)
         _data = "CBCAST" + data
         if addr == None:
             self.b.sendall(_data)
         else:
             self.b.send(addr, _data)
     def sendGB(self, data, addr = None):
-        time.sleep(0.01)
         _data = "GBCAST" + data
         if addr == None:
             self.b.sendall(_data)
@@ -42,7 +40,6 @@ class CASTSelecter(Thread):
         return self.gbpipe.read()
 
     def recv(self):
-        time.sleep(0.01)
         _data = self.b.read()
         header = _data[:6]
         data = _data[6:]

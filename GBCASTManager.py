@@ -201,6 +201,9 @@ class GBCASTManager():
             
 
         if (gb.action == "prepare"):
+            print 'vid', gb.view_id
+            print 'uid', gb.user_id
+            print 'msg', gb.message
             if gb.view_id > self.user_m.view_id:
                 self.viewchange.prepare(gb)
             else:
@@ -325,7 +328,7 @@ class GBCASTManager():
         print "ERR", "self detect", user_to_kick
         self.ebcast.foundError(user_to_kick)
         #TEMP
-        self.delete_user(user_to_kick)
+        #self.delete_user(user_to_kick)
     def recv_delete_msg(self, message, src):
         print 'ERR', "RECV delete message from", src, "msg:", message
         trim_message = message[1:]
@@ -368,11 +371,12 @@ class GBCASTManager():
         try:
             userlist.remove(user)
         except:
-            #print user , 'is not in the userlist'
+            print user , 'is not in the userlist'
             pass
 
         self.user_m.update_user_list(userlist, self.user_m.view_id)
         self.addrmanager.remove_dict(user)
+        #self.abcast.addUser("123")
         #print 'ERR', 'delete user done'
     
     def recheck_join_status(self):

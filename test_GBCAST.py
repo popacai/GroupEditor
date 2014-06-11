@@ -53,6 +53,8 @@ class keep_sending_abcast(Thread):
         threshold = 0
         while True:
             if threshold > 20:
+                time.sleep(1)
+                threshold = 0
                 continue
             self.abcast.write(str(send))
             send += 1

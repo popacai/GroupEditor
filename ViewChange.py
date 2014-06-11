@@ -16,10 +16,10 @@ class wait_to_send_prepare_ok(Thread):
         self.gb = gb # delay to send the gb message
     def run(self):
         print 'start to wait all done'
-        #self.abcast.waitAllDone()
-        t = random.randint(2,5)
-        print 'wait,',  t
-        time.sleep(t)
+        self.abcast.waitAllDone()
+        # t = random.randint(2,5)
+        # print 'wait,',  t
+        # time.sleep(t)
         self.gbcast.send_prepare_ok(self.gb)
 
 

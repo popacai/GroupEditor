@@ -75,6 +75,8 @@ class ABCASTManager(object):
     def waitAllDone(self):
         if not self.processQueue.empty() or len(self.responseReceiver) > 0:
             self.waitCondition.acquire()
+            print self.clientList
+            print [x.oid for x in self.processQueue.objects]
             self.waitCondition.wait()
             self.waitCondition.release()
         return True
@@ -106,7 +108,7 @@ class ABCASTManager(object):
                 if len(cList) == 0:
                     if not lastObj is None:
                         self._sendMessageObjBroadCast(MessageObj(self.userId, None, lastObj.oid, lastObj.mid, self.clientManager.view_id, 'F'))
-                    del self.responseReceiver[msgObj.uniqueId()]
+                    del self.responseReceiver[k]
         self.receiverMutex.release()
         self.clientListMutex.acquire()
         # print 'fetch user list from user manager'
@@ -171,18 +173,20 @@ class ABCASTManager(object):
                         if len(cList) == 0:
                             self._sendMessageObjBroadCast(MessageObj(self.userId, None, lastObj.oid, lastObj.mid, self.clientManager.view_id, 'F'))
                             del self.responseReceiver[msgObj.uniqueId()]
+                            print 'clear map %s' % str(msgObj.oid)
                 self.receiverMutex.release()
             #for F::
             else:
-                # print '%s receive F-Msg %s' % (self.userId, msg)
+                print '%s receive F-Msg %s' % (self.userId, msg)
                 self.clientListMutex.acquire()
                 if msgObj.sender in self.clientList:
                     self.heapMutex.acquire()
                     self.processQueue.update(msgObj.uniqueId(), msgObj.mid)
                     self.logManager.updatePrepare(msgObj.sender, msgObj.oid, msgObj.mid)
                     # print '%s is ready: %s' % (self.processQueue.top().uniqueId(), self.processQueue.top().delivered)
-                    while not self.processQueue.empty() and self.processQueue.top().delivered and not self.processQueue.top().discard:
+                    while not self.processQueue.empty() and (self.processQueue.top().delivered or self.processQueue.top().discard):
                         poppedObj = self.processQueue.pop()
+                        print 'clear heap %s' % (poppedObj.oid)
                         # print poppedObj.content
                         if not poppedObj.discard:
                             self.outputPipe.write(poppedObj.content)
@@ -198,12 +202,12 @@ class ABCASTManager(object):
     def _sendMessageObjBroadCast(self, msgObj, target=None):
         if msgObj.type == 'A':
             #are these locks neccessary?
-            self.receiverMutex.acquire()
+            # self.receiverMutex.acquire()
             # self.clientListMutex.acquire()
             clist = copy.deepcopy(self.clientList)
             # self.clientListMutex.release()
             self.responseReceiver[msgObj.uniqueId()] = (clist, None)
-            self.receiverMutex.release()
+            # self.receiverMutex.release()
         if target is None:
             # print 'msg sent'
             # print self.clientList

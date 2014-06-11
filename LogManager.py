@@ -1,6 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 import threading
+import json
 
 
 class LogManager(object):
@@ -68,20 +69,31 @@ class LogManager(object):
                     return str(pair[1])
         return None
 
+    def encodedRecord(self):
+        return json.dumps(self.recordList)
+
+    def decodedRecord(self, recordString):
+        self.recordList = json.loads(recordString)
+        return self.recordList
+
 if __name__ == '__main__':
     m = LogManager()
-    m.prepared = {'a': [0, 1], 'b': [1]}
-    m.delivered = {'b': [(0, 1)], 'c': [(0, 2), (1, 3)]}
+    # m.prepared = {'a': [0, 1], 'b': [1]}
+    # m.delivered = {'b': [(0, 1)], 'c': [(0, 2), (1, 3)]}
 
-    m.insertPrepare('b', 2)
-    print 'b_2: ', m.msgStatus('b', 2)
-    m.insertPrepare('c', 2)
-    print 'c_2: ', m.msgStatus('c', 2)
-    print 'c_1: ', m.msgStatus('c', 1)
-    print 'a_0: ', m.msgStatus('a', 0)
-    m.updatePrepare('a', 0, 5)
-    print 'a_0: ', m.msgStatus('a', 0)
-    print 'a_1: ', m.msgStatus('a', 1)
-    m.removePrepare('a', 1)
-    print 'a_1: ', m.msgStatus('a', 1)
-    print 'c_3: ', m.msgStatus('c', 3)
+    # m.insertPrepare('b', 2)
+    # print 'b_2: ', m.msgStatus('b', 2)
+    # m.insertPrepare('c', 2)
+    # print 'c_2: ', m.msgStatus('c', 2)
+    # print 'c_1: ', m.msgStatus('c', 1)
+    # print 'a_0: ', m.msgStatus('a', 0)
+    # m.updatePrepare('a', 0, 5)
+    # print 'a_0: ', m.msgStatus('a', 0)
+    # print 'a_1: ', m.msgStatus('a', 1)
+    # m.removePrepare('a', 1)
+    # print 'a_1: ', m.msgStatus('a', 1)
+    # print 'c_3: ', m.msgStatus('c', 3)
+    m.recordList = ['a', 'b', 'c']
+    s = m.encodedRecord()
+    print s
+    print m.decodedRecord(s)

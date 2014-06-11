@@ -20,7 +20,7 @@ class BroadCast():
         self.sending_lock = threading.Lock()
     def add_addr(self, addr, sock):
         if addr in self.socks:
-            print addr, "already in the socket list"
+            #print addr, "already in the socket list"
             return None# error
 
         self.socks[addr] = sock
@@ -36,7 +36,7 @@ class BroadCast():
         #This will send the socket.close()
 
         if addr not in self.socks:
-            print addr, "not in the socket list"
+            #print addr, "not in the socket list"
             return False
 
         sock = self.socks[addr]
@@ -78,7 +78,7 @@ class BroadCast():
             self.sending_lock.release()
             return self.output_pipe
         if addr not in self.input_pipes:
-            print addr, "not in input_pipe"
+            #print addr, "not in input_pipe"
             self.sending_lock.release()
             return None
 

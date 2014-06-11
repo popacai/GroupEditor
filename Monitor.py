@@ -38,5 +38,5 @@ class GB_Signal(Thread):
         self.gbcast_m = gbcast_m
     def run(self):
         while True:
-            print 'Monitor', 'RECV SIGNAL'
+            #print 'Monitor', 'RECV SIGNAL'
             self.gbcast_m.recv_signal()

@@ -92,7 +92,7 @@ class BroadCast():
     def broadcast(self, message): #return how many message has been sent
         self.sending_lock.acquire()
         #print 'start to broadcast'
-        for addr in self.input_pipes:
+        for addr in self.input_pipes.keys():
             #print 'pipe selection'
             pipe = self.input_pipes[addr]
             #print 'end of pipe selection'

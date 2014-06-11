@@ -15,10 +15,11 @@ class wait_to_send_prepare_ok(Thread):
         self.gbcast = gbcast
         self.gb = gb # delay to send the gb message
     def run(self):
-        self.abcast.waitAllDone()
-        t = random.randint(1,5)
-        #print 'wait,',  t
-        #time.sleep(t)
+        print 'start to wait all done'
+        #self.abcast.waitAllDone()
+        t = random.randint(2,5)
+        print 'wait,',  t
+        time.sleep(t)
         self.gbcast.send_prepare_ok(self.gb)
 
 
@@ -38,7 +39,7 @@ class ViewChange():
             user_list = json.loads(gb.message)
             user_list = user_list + self.gbcast.user_m.fetch_user_list()
             self.gbcast.user_m.update_user_list(user_list, gb.view_id)
-            #print 'abcast block'
+            print 'abcast block'
             self.abcast.block()
 
             if self.joiner == False:
@@ -54,7 +55,7 @@ class ViewChange():
                     
                 #wait to fetch
         else:
-            #print 'old view'
+            print 'old view'
             pass
 
     def prepare_ok(self, gb):
@@ -117,7 +118,7 @@ class ViewChange():
                     self.gbcast.send_prepare_ok(gb)
                 else:
                     self.gbcast.send_fetch_all_data()
-                #print 'sender wait for 3 s'
+                print 'sender wait for 3 s'
                 #self.joiner = False
                 #self.gbcast.send_prepare_ok(gb)
             

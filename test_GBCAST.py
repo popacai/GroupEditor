@@ -37,9 +37,29 @@ class read_from_abcast(Thread):
         Thread.__init__(self)
         self.ab = pipe
     def run(self):
+        global threshold
+        threshold = 0
         while True:
             print self.ab.read()
+            threshold -= 1
 
+class keep_sending_abcast(Thread):
+    def __init__(self, abcast):
+        Thread.__init__(self)
+        self.abcast = abcast
+    def run(self):
+        send = 0
+        global threshold
+        threshold = 0
+        while True:
+            if threshold > 20:
+                continue
+            self.abcast.write(str(send))
+            send += 1
+            threshold += 1
+        
+
+           
 
 
 #20 members at most
@@ -119,6 +139,20 @@ def main():
     t_gbcast.start()
 
     print '====================================================='
+    gb_m.send_user_dict_request()
+
+    while True:
+        if ab_m.startFlag:
+            break
+        time.sleep(0.1)
+
+    keeper = keep_sending_abcast(ab_m)
+    keeper.setDaemon(True)
+    keeper.start()
+
+
+
+    print '========================================'
     #message 
     count = 0
     while True:

@@ -4,7 +4,7 @@
 
 class MessageObj(object):
     """docstring for MessageObj"""
-    def __init__(self, sender, content, oid, mid, bType):
+    def __init__(self, sender, content, oid, mid, vid, bType):
         super(MessageObj, self).__init__()
         self.type = bType
         self.sender = sender
@@ -12,6 +12,7 @@ class MessageObj(object):
         self.replier = None
         self.oid = oid
         self.mid = mid
+        self.vid = vid
         self.delivered = False
         self.discard = False
 
@@ -37,11 +38,11 @@ class MessageObj(object):
 
     def __str__(self):
         if self.type == 'A':
-            return '::'.join((self.type, self.sender + '_' + str(self.oid), str(self.mid), self.content))
+            return '::'.join((self.type, self.sender + '_' + str(self.oid), str(self.mid), str(self.vid), self.content))
         elif self.type == 'F':
-            return '::'.join((self.type, self.sender + '_' + str(self.oid), str(self.mid)))
+            return '::'.join((self.type, self.sender + '_' + str(self.oid), str(self.mid), str(self.vid)))
         else:
-            return '::'.join((self.type, self.sender + '_' + str(self.oid), str(self.mid), self.replier))
+            return '::'.join((self.type, self.sender + '_' + str(self.oid), str(self.mid), str(self.vid), self.replier))
 
     #required interface for heap
     def generateKey(self):
@@ -63,17 +64,18 @@ def fromStr(msg):
     newsender = msg_split[1].split('_')[0]
     newoid = msg_split[1].split('_')[1]
     newmid = int(msg_split[2])
+    newvid = int(msg_split[3])
     newreplier = None
     if newtype == 'A':
-        newcontent = ''.join(msg_split[3:])
+        newcontent = ''.join(msg_split[4:])
     else:
         newcontent = ''
     if newtype == 'P':
-        newreplier = msg_split[3]
+        newreplier = msg_split[4]
     else:
         newreplier = None
     newdelivered = False
-    obj = MessageObj(newsender, newcontent, newoid, newmid, newtype)
+    obj = MessageObj(newsender, newcontent, newoid, newmid, newvid, newtype)
     obj.replier = newreplier
     return obj
 

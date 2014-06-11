@@ -25,7 +25,7 @@ class EBCASTManager(object):
     def foundError(self, errUser):
         self.receiverMutex.acquire()
         if errUser in self.abcManager.clientList:
-            print 'first time'
+            # print 'first time'
             self.gbcManager.delete_user(errUser)
             self.abcManager.removeUser(errUser)
             bcMsg = self.userId + '::' + errUser
@@ -46,7 +46,7 @@ class EBCASTManager(object):
         self.receiverMutex.acquire()
 
         if errObj.errorUser in self.abcManager.clientList:
-            print 'first time'
+            # print 'first time'
             self.gbcManager.delete_user(errObj.errorUser)
             self.abcManager.removeUser(errObj.errorUser)
 

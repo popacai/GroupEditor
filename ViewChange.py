@@ -18,7 +18,7 @@ class wait_to_send_prepare_ok(Thread):
         self.abcast.waitAllDone()
         t = random.randint(1,5)
         print 'wait,',  t
-        time.sleep(t)
+        #time.sleep(t)
         self.gbcast.send_prepare_ok(self.gb)
 
 
@@ -48,6 +48,7 @@ class ViewChange():
             if self.joiner == True:
                 if (self.gbcast.user_m.new_group == True):
                     self.gbcast.user_m.new_group = False
+                    self.abcast.start()
                     self.gbcast.send_prepare_ok(gb)
                     self.joiner = False
                     

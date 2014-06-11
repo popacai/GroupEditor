@@ -63,6 +63,9 @@ class EditorGUI(object):
         self._COLOR_NUM = 7
         self._username = username
 
+        self._COL_MAX = 50
+        self._ROW_MAX = 20 
+
         # if filename already exists, try to load from it
         text = ''
         if filename != None and os.path.isfile(filename):
@@ -404,8 +407,12 @@ class EditorGUI(object):
 
     def insert(self, char, row, col):
         #print 'in insert: ', char
-        if len(self._buf.get_lines()[row]) > (self._stdscr.getmaxyx()[1] - 10) and char != ord('\n'):
+        max_width = min(self._stdscr.getmaxyx()[1] - 10, self._COL_MAX)
+        max_height = min(self._stdscr.getmaxyx()[0] - 3, self._ROW_MAX)
+        if len(self._buf.get_lines()[row]) > max_width and char != ord('\n'):
             #print 'rrrrrrrrrow: ', row
+            return False
+        elif len(self._buf.get_lines()) > max_height and char == ord('\n'):
             return False
         row, col = self._check_cursor(row, col)
         self._buf.set_text(row, col, row, col, chr(char))

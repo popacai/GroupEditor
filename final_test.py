@@ -121,10 +121,13 @@ def main():
     print '====================================================='
     #message 
     count = 0
+    gb_m.send_user_dict_request()
+    '''
     while True:
         message = raw_input()
         if (message == "sync"):
             gb_m.send_user_dict_request()
+            break;
         elif message == "clock":
             gb_m.test_clock(str(count))
             count += 1
@@ -150,6 +153,19 @@ def main():
                     print 'error'
         else:
             ab_m.write(message)
+    '''
+    while True:
+        if ab_m.startFlag:
+            break
+        time.sleep(0.1)
+
+    print 'started'
+
+    #testing code
+    while True:
+        message = raw_input()
+        ab_m.write(message)
+
 
 
     #Init abcast

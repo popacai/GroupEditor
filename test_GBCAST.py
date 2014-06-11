@@ -103,7 +103,7 @@ def main():
     #Init ABCAST
     #fake
     ab_m = ABCASTManager(user_id, t_cast_s, um, LogManager()) 
-    ab_m.start()
+    #ab_m.start()
 
 
     #ABCAST Reader

@@ -122,6 +122,7 @@ class GBCASTManager():
         message.view_id = self.user_m.view_id
         message.action = "fetch_response"
         message.message = self.abcast.logManager.encodedRecord()
+        print 'fetch response', message.message
 
         str_message = message.__encode__()
         self.cast_s.sendGB(str_message, request_user)
@@ -135,7 +136,15 @@ class GBCASTManager():
         message.message = "encode"
 
         str_message = message.__encode__()
-        self.cast_s.sendGB(str_message, self.user_m.fetch_user_list()[0])
+
+        c = self.user_m.fetch_user_list()
+        
+        other_user = ""
+        for user in c:
+            if user is not self.UID:
+                other_user = user
+
+        self.cast_s.sendGB(str_message, other_user)
 
     def notify_all(self):
         self.cond.acquire()
@@ -201,13 +210,12 @@ class GBCASTManager():
             print 'uid', gb.user_id
             print 'msg', gb.message
             if (self.viewchange.prepare_ok(gb)):
-
                 #user_list = json.loads(gb.message)
                 #self.user_m.uate_user_list(user_list)
                 self.abcast.addUser("123")
-                
                 print 'abcast resume'
                 self.abcast.resume()
+
         if (gb.action == "fetch_request"):
             print 'fetch data'
             #request the fetch
@@ -216,20 +224,23 @@ class GBCASTManager():
             self.send_fetch_response(gb)
 
         if (gb.action == "fetch_response"):
-            if gb.view_id >= self.user_m.view_id:
-                #time.sleep(3)
-                print 'get fetched message'
-                self.viewchange.joiner = False
-                str_history = gb.message
-                self.abcast.logManager.decodedRecord(str_history)
+            if self.viewchange.joiner == True:
+                if gb.view_id >= self.user_m.view_id:
+                    #time.sleep(3)
+                    print 'get fetched message'
+                    self.viewchange.joiner = False
+                    str_history = gb.message
+                    t = self.abcast.logManager.decodedRecord(str_history)
+                    self.abcast.synchronize(t)
 
-                gb.message = json.dumps(self.user_m.fetch_user_list())
-                print 'done'
-                time.sleep(3)
-                print 'wait 3'
-                self.send_prepare_ok(gb)
-            else:
-                print 'old view'
+                    gb.message = json.dumps(self.user_m.fetch_user_list())
+                    print 'done'
+                    #time.sleep(3)
+                    self.abcast.start()
+                    print 'send final prepare-ok'
+                    self.send_prepare_ok(gb)
+                else:
+                    print 'old view'
 
 
         #check whether to prepare OK

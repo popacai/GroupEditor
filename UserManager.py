@@ -38,20 +38,21 @@ class UserManager():
         
         self.new_group = False
         if u == self.UID:
-            print 'succeed to connect itself'
+            #print 'succeed to connect itself'
             pass
         else:
-            print 'error to add self'
+            #print 'error to add self'
+            pass
 
     def add_user(self, addr, remote_uid):
         s = cast_connect(addr, self.UID)
         if s == None:
-            print "unable to connect", addr
+            #print "unable to connect", addr
             return None
         
         self.temp_user_list[remote_uid] = s
         self.b.add_addr(remote_uid, s)
-        print "temp" , self.temp_user_list
+        #print "temp" , self.temp_user_list
         return s
 
     def new_user(self):
@@ -64,7 +65,8 @@ class UserManager():
             data = self.b.get_signal_message()
             items = data.split(',')
             if len(items) != 2:
-                print "error!", data
+                #print "error!", data
+                pass
             
             UID = items[1]
 
@@ -92,7 +94,7 @@ class UserManager():
 
     def update_user_list(self, users, view_id):
         if (self.view_id > view_id):
-            print 'old view id'
+            #print 'old view id'
             return 
 
         self.lock.acquire()
@@ -100,7 +102,7 @@ class UserManager():
         for user in users:
             if user not in self.user_list:
                 if user not in self.temp_user_list:
-                    print user + 'not in temp user list error'
+                    #print user + 'not in temp user list error'
                     continue
                 self.user_list[user] = self.temp_user_list[user] #copy the socket
 
@@ -108,7 +110,7 @@ class UserManager():
         for user in self.user_list:
             if user not in users:
                 self.kicked_user_list.append(user)
-                print 'remove', user, "in the user list"
+                #print 'remove', user, "in the user list"
                 temp_to_delete.append(user)
                 self.b.remove_addr(user)
 
@@ -130,7 +132,7 @@ def cast_connect(addr, uid):
         s.connect(addr)
         s.sendall(uid)
     except:
-        print 'connect error'
+        #print 'connect error'
         return None
     return s
 
@@ -157,7 +159,7 @@ class LocalListener(Thread):
             s.connect(addr)
             s.sendall(uid)
         except:
-            print 'connect error'
+            #print 'connect error'
             return None
         return s
 
@@ -169,7 +171,7 @@ class LocalListener(Thread):
                 self.user_list[user_id] = conn
                 self.pipe.write(user_id)
             except:
-                print 'recv user_id error'
+                #print 'recv user_id error'
                 continue
 
 if __name__ == "__main__":

@@ -50,7 +50,7 @@ class GBCASTManager():
 
         self.addrmanager = AddrManager(self.user_m.local_addr, UID)
 
-        print 'UID', UID
+        #print 'UID', UID
 
         self.status = 0 #use status machine to control
         #self.status = 1
@@ -122,7 +122,7 @@ class GBCASTManager():
         message.view_id = self.user_m.view_id
         message.action = "fetch_response"
         message.message = self.abcast.logManager.encodedRecord()
-        print 'fetch response', message.message
+        #print 'fetch response', message.message
 
         str_message = message.__encode__()
         self.cast_s.sendGB(str_message, request_user)
@@ -160,17 +160,18 @@ class GBCASTManager():
         gb = GBMessage().__decode__(str_message)
         #View ID is too old
 
-        print "action", gb.action
+        #print "action", gb.action
         if (gb.action == "clock"):
-            print gb.user_id, gb.message
+            #print gb.user_id, gb.message
+            pass
         if (gb.action == "kick"):
             #remote delete
             if (gb.view_id < self.user_m.view_id):
-                print gb.view_id, self.user_m.view_id, ' view id is too old' 
+                #print gb.view_id, self.user_m.view_id, ' view id is too old' 
                 return
             if (gb.view_id > self.user_m.view_id):
                 self.user_m.updateuser_dict(self.user_m.fetch_user_list(), gb.view_id)
-            print 'kick', gb.message , "*"
+            #print 'kick', gb.message , "*"
             if (gb.user_id in self.user_m.fetch_user_list()):
                 self.recv_delete_msg(gb.message, gb.user_id)
 
@@ -190,12 +191,12 @@ class GBCASTManager():
                 if (self.connect_user_dict()):
                     self.status = 2
                 else:
-                    print 'error!', 'cannot join the group, try again'
+                    #print 'error!', 'cannot join the group, try again'
                     self.status = 0
-            print 'status', self.status
+            #print 'status', self.status
 
         if (self.status == 2):
-            print 'ready to send prepare'
+            #print 'ready to send prepare'
             self.send_prepare()
             
 
@@ -203,21 +204,22 @@ class GBCASTManager():
             if gb.view_id > self.user_m.view_id:
                 self.viewchange.prepare(gb)
             else:
-                print 'PREPARE', "old view id", gb.view_id
+                #print 'PREPARE', "old view id", gb.view_id
+                pass
 
         if (gb.action == "prepare-ok"):
-            print 'vid', gb.view_id
-            print 'uid', gb.user_id
-            print 'msg', gb.message
+            #print 'vid', gb.view_id
+            #print 'uid', gb.user_id
+            #print 'msg', gb.message
             if (self.viewchange.prepare_ok(gb)):
                 #user_list = json.loads(gb.message)
                 #self.user_m.uate_user_list(user_list)
                 self.abcast.addUser("123")
-                print 'abcast resume'
+                #print 'abcast resume'
                 self.abcast.resume()
 
         if (gb.action == "fetch_request"):
-            print 'fetch data'
+            #print 'fetch data'
             #request the fetch
             #fetch local 
             #encode and send back
@@ -227,20 +229,21 @@ class GBCASTManager():
             if self.viewchange.joiner == True:
                 if gb.view_id >= self.user_m.view_id:
                     #time.sleep(3)
-                    print 'get fetched message'
+                    #print 'get fetched message'
                     self.viewchange.joiner = False
                     str_history = gb.message
                     t = self.abcast.logManager.decodedRecord(str_history)
                     self.abcast.synchronize(t)
 
                     gb.message = json.dumps(self.user_m.fetch_user_list())
-                    print 'done'
+                    #print 'done'
                     #time.sleep(3)
                     self.abcast.start()
-                    print 'send final prepare-ok'
+                    #print 'send final prepare-ok'
                     self.send_prepare_ok(gb)
                 else:
-                    print 'old view'
+                    #print 'old view'
+                    pass
 
 
         #check whether to prepare OK
@@ -268,7 +271,7 @@ class GBCASTManager():
         message.user_id = self.UID
         message.action = "prepare-ok"
         #message.message = str_user_list
-        print 'ok', message.message
+        #print 'ok', message.message
 
         str_message = message.__encode__()
 
@@ -293,7 +296,7 @@ class GBCASTManager():
         user_list.remove(self.UID)
         new_user_list = user_list + [self.UID]
         str_json = json.dumps(new_user_list)
-        print "PREPARE", "new_user_list", new_user_list
+        #print "PREPARE", "new_user_list", new_user_list
 
         message.message = str_json
 
@@ -302,7 +305,7 @@ class GBCASTManager():
         self.cast_s.sendGB(str_message)
 
     def send_kick_message(self, message):
-        print 'ERR', 'SEND Kick Message', message
+        #print 'ERR', 'SEND Kick Message', message
         kick_message = GBMessage()
 
         kick_message.view_id = self.user_m.view_id
@@ -319,12 +322,12 @@ class GBCASTManager():
         user_to_kick = self.user_m.quit_user()
 
         #self detect
-        print "ERR", "self detect", user_to_kick
+        #print "ERR", "self detect", user_to_kick
         self.ebcast.foundError(user_to_kick)
         #TEMP
         self.delete_user(user_to_kick)
     def recv_delete_msg(self, message, src):
-        print 'ERR', "RECV delete message from", src, "msg:", message
+        #print 'ERR', "RECV delete message from", src, "msg:", message
         trim_message = message[1:]
         if message[0] == "B":
             message = self.ebcast.receiveErrorBroadCast(trim_message)
@@ -360,16 +363,17 @@ class GBCASTManager():
         '''
 
     def delete_user(self, user):
-        print 'ERR', 'delete user', user
+        #print 'ERR', 'delete user', user
         userlist = self.user_m.fetch_user_list()
         try:
             userlist.remove(user)
         except:
-            print user , 'is not in the userlist'
+            #print user , 'is not in the userlist'
+            pass
 
         self.user_m.update_user_list(userlist, self.user_m.view_id)
         self.addrmanager.remove_dict(user)
-        print 'ERR', 'delete user done'
+        #print 'ERR', 'delete user done'
     
     def recheck_join_status(self):
         self.cond.acquire()
@@ -378,6 +382,6 @@ class GBCASTManager():
         if self.viewchange.check_log():
             self.abcast.addUser("123")
             self.abcast.resume()
-            print 'abcast resume'
+            #print 'abcast resume'
 
 

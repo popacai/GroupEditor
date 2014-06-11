@@ -280,6 +280,9 @@ class EditorGUI(object):
         return (row, col)
     def _handle_normal_keypress(self, char):
         """Handle a keypress in normal mode."""
+        #print len(char)
+        #if char == [27, 91, 65]:
+        #    print 'up!!!'
         if char == ord('q'): # quit
             self._will_exit = True
             self._pipe.write(self._username + '__quit')
@@ -334,14 +337,26 @@ class EditorGUI(object):
 
     def _handle_insert_keypress(self, char):
         """Handle a keypress in insert mode."""
-        if char == 27:
+        if char == curses.KEY_UP:
+            self._pipe.write(self._username + '__move__-1__0')
+
+        elif char == curses.KEY_DOWN:
+            self._pipe.write(self._username + '__move__1__0')
+
+        elif char == curses.KEY_LEFT:
+            self._pipe.write(self._username + '__move__0__-1')
+
+        elif char == curses.KEY_RIGHT:
+            self._pipe.write(self._username + '__move__0__1')
+
+        elif char == 27:
             # leaving insert mode moves cursor left
             if self._mode == 'insert':
                 self._pipe.write(self._username + '__move__0__-1')
                 #self._col -= 1
             self._mode = "normal"
-        elif char == 127: # backspace
-            self._pipe.write(self._username + '__insert__' + chr(char))
+        elif char == 263: # backspace
+            self._pipe.write(self._username + '__insert__' + chr(127))
             """ 
             if self._col == 0 and self._row == 0:
                 pass # no effect
@@ -359,7 +374,7 @@ class EditorGUI(object):
                                     self._col, '')
                 self._col -= 1
             """ 
-        else:
+        elif char < 256:
             self._pipe.write(self._username + '__insert__'+chr(char))
         """ 
             self._message = ('inserted {} at row {} col {}'
@@ -445,12 +460,27 @@ class EditorGUI(object):
         """GUI main loop."""
         self._draw()
         self._message = ''
+        self._stdscr.keypad(1)
         while not self._will_exit:
 
             #print 'hello?'
             char = self._stdscr.getch()
+            #print char
+            #if char == curses.KEY_UP:
+            #    self.
+            #elif char != -1:
+            #print char
             if self._mode == 'normal':
-                self._handle_normal_keypress(char)
+                if char == curses.KEY_UP:
+                    self._handle_normal_keypress(ord('k'))
+                elif char == curses.KEY_DOWN:
+                    self._handle_normal_keypress(ord('j'))
+                elif char == curses.KEY_LEFT:
+                    self._handle_normal_keypress(ord('h'))
+                elif char == curses.KEY_RIGHT:
+                    self._handle_normal_keypress(ord('l'))
+                elif char < 256:
+                    self._handle_normal_keypress(char)
             elif self._mode == 'insert':
                 self._handle_insert_keypress(char)
 

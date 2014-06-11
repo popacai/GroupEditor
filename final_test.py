@@ -9,11 +9,20 @@ from Monitor import Thread_GBCAST
 from GBCASTManager import GBCASTManager
 from ABCASTManager import ABCASTManager
 from LogManager import LogManager
+
+from cooperator import cooperator
+from editor import EditorGUI
+import curses
+import threading
+from editor_manager import execute_msg
+
+
 import sys
 import time
 
 if __name__ != "__main__":
     exit()
+
 
 # Test used only 
 # auto update the user_list
@@ -39,6 +48,17 @@ class read_from_abcast(Thread):
     def run(self):
         while True:
             print self.ab.read()
+
+def init_colors():
+    # init all color pairs, for cursors
+    curses.start_color()
+    curses.init_pair(1, 0, 7)
+    curses.init_pair(2, 7, 1)
+    curses.init_pair(3, 7, 2)
+    curses.init_pair(4, 0, 3)
+    curses.init_pair(5, 7, 4)
+    curses.init_pair(6, 7, 5)
+    curses.init_pair(7, 0, 6)
 
 
 
@@ -109,7 +129,7 @@ def main():
     #ABCAST Reader
     t_ab_reader = read_from_abcast(ab_m)
     t_ab_reader.setDaemon(True)
-    t_ab_reader.start()
+    #t_ab_reader.start()
 
     #Init GBCAST
     gb_m = GBCASTManager(user_id,t_cast_s, um, ab_m)
@@ -159,16 +179,36 @@ def main():
             break
         time.sleep(0.1)
 
-    print 'started'
+    #print 'started'
 
     #testing code
-    while True:
-        message = raw_input()
-        ab_m.write(message)
+    #while True:
+    #    message = raw_input()
+    #    ab_m.write(message)
+
+    # init editor
+    name = user_id
+    filename = '' 
+    coops = {}
+
+    stdscr = curses.initscr()
+    init_colors()
+    stdscr.bkgd(1, curses.COLOR_BLACK)
+    gui = EditorGUI(stdscr, name, filename)
 
 
+    coop = cooperator(gui, 1)
+    coops[name] = coop
 
-    #Init abcast
+    gui._cooperators.append(coop)
+    gui.set_pipe(ab_m)
+
+    execute_msg_t = execute_msg(ab_m, coops, gui)
+    execute_msg_t.setDaemon(True)
+    execute_msg_t.start()
+
+    gui.main()
+
 
 if __name__ == "__main__":
     main()

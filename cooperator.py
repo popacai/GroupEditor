@@ -51,17 +51,5 @@ class cooperator:
         self._gui.delete(self._row, self._col)	
         self._gui._refresh_cursors()
 
-    def recv_message(self):
-        while True:
-            msg = self._pipe.read().split(':')
-            #print msg
-            if msg[0] == 'quit':
-                break
-            elif msg[0] == 'insert':
-                self.handle_insert(ord(msg[1]))
-            elif msg[0] == 'move':
-                self.handle_cursor_move(int(msg[1]), int(msg[2]))
-            elif msg[0] == 'delete':
-                self.handle_delete()
     def get_para(self):
         return self._row, self._col

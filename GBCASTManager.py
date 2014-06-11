@@ -9,6 +9,7 @@ from GBMessage import GBMessage
 from ViewChange import ViewChange
 import json
 import threading
+import time
 '''
 detect user add
     #This is the leader <- the new client join in the group
@@ -115,9 +116,26 @@ class GBCASTManager():
         str_message = message.__encode__()
 
         self.cast_s.sendGB(str_message)
+    def send_fetch_response(self, gb):
+        request_user = gb.user_id
+        message = GBMessage()
+        message.view_id = self.user_m.view_id
+        message.action = "fetch_response"
+        message.message = self.abcast.logManager.encodedRecord()
+
+        str_message = message.__encode__()
+        self.cast_s.sendGB(str_message, request_user)
+
 
     def send_fetch_all_data(self):
-        pass
+        message = GBMessage()
+        message.view_id = self.user_m.view_id
+        message.user_id = self.UID
+        message.action = "fetch_request"
+        message.message = "encode"
+
+        str_message = message.__encode__()
+        self.cast_s.sendGB(str_message, self.user_m.fetch_user_list()[0])
 
     def notify_all(self):
         self.cond.acquire()
@@ -142,7 +160,7 @@ class GBCASTManager():
                 print gb.view_id, self.user_m.view_id, ' view id is too old' 
                 return
             if (gb.view_id > self.user_m.view_id):
-                self.user_m.update_user_dict(self.user_m.fetch_user_list(), gb.view_id)
+                self.user_m.updateuser_dict(self.user_m.fetch_user_list(), gb.view_id)
             print 'kick', gb.message , "*"
             if (gb.user_id in self.user_m.fetch_user_list()):
                 self.recv_delete_msg(gb.message, gb.user_id)
@@ -190,6 +208,28 @@ class GBCASTManager():
                 
                 print 'abcast resume'
                 self.abcast.resume()
+        if (gb.action == "fetch_request"):
+            print 'fetch data'
+            #request the fetch
+            #fetch local 
+            #encode and send back
+            self.send_fetch_response(gb)
+
+        if (gb.action == "fetch_response"):
+            if gb.view_id >= self.user_m.view_id:
+                #time.sleep(3)
+                print 'get fetched message'
+                self.viewchange.joiner = False
+                str_history = gb.message
+                self.abcast.logManager.decodedRecord(str_history)
+
+                gb.message = json.dumps(self.user_m.fetch_user_list())
+                print 'done'
+                time.sleep(3)
+                print 'wait 3'
+                self.send_prepare_ok(gb)
+            else:
+                print 'old view'
 
 
         #check whether to prepare OK
@@ -265,14 +305,11 @@ class GBCASTManager():
 
 
     def recv_signal(self):
-
-
         user_to_kick = self.user_m.quit_user()
 
         #self detect
         print "ERR", "self detect", user_to_kick
         self.ebcast.foundError(user_to_kick)
-
         #TEMP
         self.delete_user(user_to_kick)
     def recv_delete_msg(self, message, src):
@@ -320,7 +357,6 @@ class GBCASTManager():
             print user , 'is not in the userlist'
 
         self.user_m.update_user_list(userlist, self.user_m.view_id)
-
         self.addrmanager.remove_dict(user)
         print 'ERR', 'delete user done'
     

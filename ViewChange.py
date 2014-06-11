@@ -110,12 +110,16 @@ class ViewChange():
                 #Local is the only one not prepare-ok.
                 #All peers are prepare-ok
                 #start to fetch the data
-                print 'sender wait for 3 s'
-                time.sleep(3)
-                self.joiner = False
-                self.gbcast.send_prepare_ok(gb)
+                if self.gbcast.user_m.new_group:
+                    self.viewchange.joiner = False
+                    self.gbcast.send_prepare_ok(gb)
+                else:
+                    self.gbcast.send_fetch_all_data()
+                #print 'sender wait for 3 s'
+                #self.joiner = False
+                #self.gbcast.send_prepare_ok(gb)
             
-            return True
+            return False
         '''
         user_list = self.gbcast.user_m.fetch_user_list()
         for user in user_list:

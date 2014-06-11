@@ -36,13 +36,14 @@ class ViewChange():
         #Be called if recv a prepare
         #Sender and Recver
         if (gb.view_id > self.view_id):
+            self.view_id = gb.view_id
             user_list = json.loads(gb.message)
             user_list = user_list + self.gbcast.user_m.fetch_user_list()
             self.gbcast.user_m.update_user_list(user_list, gb.view_id)
-            print 'abcast block'
-            self.abcast.block()
 
             if self.joiner == False:
+                print 'abcast block'
+                self.abcast.block()
                 w = wait_to_send_prepare_ok(self.abcast, self.gbcast, gb)
                 w.setDaemon(True)
                 w.start()
@@ -59,6 +60,9 @@ class ViewChange():
             pass
 
     def prepare_ok(self, gb):
+        if (gb.view_id > self.view_id):
+            self.prepare(gb)
+
         new_user = ""
         all_done = False
         if (gb.view_id >= self.view_id):

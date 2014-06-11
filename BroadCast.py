@@ -73,19 +73,22 @@ class BroadCast():
 
     def send(self, addr, message): #return the input_pipe
         self.sending_lock.acquire()
-        if self.socks[addr] == None:
-            self.output_pipe.write(message)
-            self.sending_lock.release()
-            return self.output_pipe
-        if addr not in self.input_pipes:
-            #print addr, "not in input_pipe"
-            self.sending_lock.release()
-            return None
+        try:
+            if self.socks[addr] == None:
+                self.output_pipe.write(message)
+                self.sending_lock.release()
+                return self.output_pipe
+            if addr not in self.input_pipes:
+                #print addr, "not in input_pipe"
+                self.sending_lock.release()
+                return None
 
-        input_pipe = self.input_pipes[addr]
-        input_pipe.write(message)
+            input_pipe = self.input_pipes[addr]
+            input_pipe.write(message)
+        except:
+            print 'sending error'
         self.sending_lock.release()
-        return input_pipe
+        return None
 
     def sendall(self,message):
         return self.broadcast(message)

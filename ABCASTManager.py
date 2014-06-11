@@ -84,6 +84,10 @@ class ABCASTManager(object):
             self.sendProc.setDaemon(True)
             self.sendProc.start()
 
+    def synchronize(self, operationList):
+        for op in operationList:
+            self.outputPipe.write(op)
+
     def addUser(self, userId):
         self.clientListMutex.acquire()
         self.clientList = self.clientManager.fetch_user_list()

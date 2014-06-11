@@ -105,7 +105,7 @@ class EditorGUI(object):
 
     def _draw(self):
         """Draw the GUI."""
-        self._stdscr.erase()
+        self._stdscr.clear()
         height = self._stdscr.getmaxyx()[0]
         width = self._stdscr.getmaxyx()[1]
         self._draw_status_line(0, height - 1, width)
@@ -495,8 +495,8 @@ class EditorGUI(object):
             self._col = min(num_cols - 1, max(0, self._col))
 
             #self._draw()
-            #self._draw()
-            #self._refresh_cursors()
+            self._draw()
+            self._refresh_cursors()
             #self._stdscr.refresh()
             #print 'main'
             self._message = ''

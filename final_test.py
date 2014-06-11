@@ -64,13 +64,28 @@ def init_colors():
 
 #20 members at most
 def main():
-    user_id = sys.argv[1]
-    index = int(user_id)
+    import hashlib
+
+    #user_id = sys.argv[1]
+    a_ip_addr = sys.argv[1]
+    a_port = int(sys.argv[2])
+
+    #user_id = hashlib.md5(str(localaddr)).hexdigest()[:20]
+
+
+    #b_user_id = sys.argv[4]
+    b_ip_addr = sys.argv[3]
+    b_port = int(sys.argv[4])
 
     #Port = 10000 + index
-    ip_addr = "localhost"
-    port = 10000 + index
+    ip_addr = a_ip_addr
+    port = a_port
     localaddr = (ip_addr, port)
+
+    user_id = hashlib.md5(str(localaddr)).hexdigest()[:20]
+
+    print user_id
+    print localaddr
 
     user_id = user_id.ljust(20)
 
@@ -100,13 +115,18 @@ def main():
         #if sock != None:
             #add_new_user_abcast_list(remote_uid)
     '''
-    if sys.argv[2] == 'n':
+    if sys.argv[3] == 'n':
         um.new_group = True
     else:
-        offset = int(sys.argv[2])
-        remote_ip_addr = ("localhost", 10000 + offset)
+        remote_ip_addr = (b_ip_addr, b_port)
+        
 
-        remote_uid = str(offset).ljust(20)
+        remote_uid = hashlib.md5(str(remote_ip_addr)).hexdigest()[:20]
+
+        #remote_uid = b_user_id.ljust(20)
+
+        print remote_ip_addr
+        print remote_uid
         sock = um.add_user(remote_ip_addr, remote_uid)
 
     '''

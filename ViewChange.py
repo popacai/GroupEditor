@@ -29,7 +29,7 @@ class ViewChange():
         self.abcast = abcast
         self.gbcast = gbcast
         self.log = {}
-        self.joiner = False
+        self.joiner = True
 
     def prepare(self, gb):
         #Be called if recv a prepare
@@ -43,11 +43,15 @@ class ViewChange():
 
             if self.joiner == False:
                 w = wait_to_send_prepare_ok(self.abcast, self.gbcast, gb)
-            else:
-                pass
+                w.setDaemon(True)
+                w.start()
+            if self.joiner == True:
+                if (self.gbcast.user_m.new_group == True):
+                    self.gbcast.user_m.new_group = False
+                    self.gbcast.send_prepare_ok(gb)
+                    self.joiner = False
+                    
                 #wait to fetch
-            w.setDaemon(True)
-            w.start()
         else:
             print 'old view'
 
@@ -80,7 +84,11 @@ class ViewChange():
         user_list = self.gbcast.user_m.fetch_user_list()
         for user in user_list:
             if user not in log:
-                return False
+                if self.joiner == False:
+                    return False
+                else:
+                    if user == self.gbcast.UID:
+                        continue
         return True
 
     def insert_into_log(self, gb, new_user):
@@ -94,7 +102,20 @@ class ViewChange():
         log = self.log[gb.view_id]
 
         #check status?
-        return self.check_log()
+        if self.joiner == False:
+            return self.check_log()
+        else:
+            s = self.check_log()
+            if s == True:
+                #Local is the only one not prepare-ok.
+                #All peers are prepare-ok
+                #start to fetch the data
+                print 'sender wait for 3 s'
+                time.sleep(3)
+                self.joiner = False
+                self.gbcast.send_prepare_ok(gb)
+            
+            return True
         '''
         user_list = self.gbcast.user_m.fetch_user_list()
         for user in user_list:

@@ -21,6 +21,7 @@ class UserManager():
 
         self.temp_user_list = {}
         self.user_list = {}
+        self.kicked_user_list = []
 
         self.t_ll = LocalListener(self.local_addr, self.temp_user_list)
         self.t_ll.setDaemon(True)
@@ -35,6 +36,7 @@ class UserManager():
         self.b.add_addr(u, None) #send loopback
         #self.b.add_addr(u, sock)
         
+        self.new_group = False
         if u == self.UID:
             print 'succeed to connect itself'
             pass
@@ -105,6 +107,7 @@ class UserManager():
         temp_to_delete = []
         for user in self.user_list:
             if user not in users:
+                self.kicked_user_list.append(user)
                 print 'remove', user, "in the user list"
                 temp_to_delete.append(user)
                 self.b.remove_addr(user)
@@ -113,6 +116,10 @@ class UserManager():
             self.user_list[user].close()
             self.user_list[user] = None
             del self.user_list[user]
+
+        for user in users:
+            if user in self.kicked_user_list:
+                del self.user_list[user]
 
         self.lock.release()
 

@@ -177,7 +177,7 @@ class ABCASTManager(object):
                 self.receiverMutex.release()
             #for F::
             else:
-                print '%s receive F-Msg %s' % (self.userId, msg)
+                #print '%s receive F-Msg %s' % (self.userId, msg)
                 self.clientListMutex.acquire()
                 if msgObj.sender in self.clientList:
                     self.heapMutex.acquire()

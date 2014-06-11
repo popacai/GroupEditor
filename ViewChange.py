@@ -17,6 +17,7 @@ class wait_to_send_prepare_ok(Thread):
     def run(self):
         print 'start to wait all done'
         self.abcast.waitAllDone()
+        print 'wait all done'
         # t = random.randint(2,5)
         # print 'wait,',  t
         # time.sleep(t)

@@ -51,6 +51,7 @@ class ABCASTManager(object):
         self.sendProc = CustomThread(self._startSendBroadCast)
 
         self.pauseFlag = False
+        self.startFlag = False
         self.waitCondition = threading.Condition()
 
     def start(self):
@@ -58,6 +59,7 @@ class ABCASTManager(object):
         self.sendProc.setDaemon(True)
         self.recvProc.start()
         self.sendProc.start()
+        self.startFlag = True
 
     def read(self):
         #parsed value

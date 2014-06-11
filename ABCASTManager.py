@@ -31,6 +31,7 @@ class ABCASTManager(object):
         self.clock = 0
         self.clockMutex = threading.Lock()
         self.logManager = logManager
+        self.viewId = clientManager.view_id
 
         self.userId = userId
         self.inputPipe = PIPE()
@@ -94,7 +95,7 @@ class ABCASTManager(object):
 
     def addUser(self, userId):
         self.clientListMutex.acquire()
-        self.clientList = self.clientManager.fetch_user_list()
+        self.clientList, self.viewId = self.clientManager.get_user_list()
         self.clientListMutex.release()
 
     def removeUser(self, userId):
@@ -107,7 +108,7 @@ class ABCASTManager(object):
                 cList.remove(userId)
                 if len(cList) == 0:
                     if not lastObj is None:
-                        self._sendMessageObjBroadCast(MessageObj(self.userId, None, lastObj.oid, lastObj.mid, self.clientManager.view_id, 'F'))
+                        self._sendMessageObjBroadCast(MessageObj(self.userId, None, lastObj.oid, lastObj.mid, self.viewId, 'F'))
                     del self.responseReceiver[k]
         self.receiverMutex.release()
         self.clientListMutex.acquire()
@@ -137,7 +138,8 @@ class ABCASTManager(object):
             # print 'msg received'
             # print self.clientList
             msgObj = fromStr(msg)
-            if msgObj.vid != self.clientManager.view_id:
+            if msgObj.vid != self.viewId:
+                print 'view changed'
                 continue
             #selector
             #for A::
@@ -152,7 +154,7 @@ class ABCASTManager(object):
                     clk = self.clock = max(self.clock, self.processQueue.maxObj.mid) + 1
                     self.clockMutex.release()
                     self.heapMutex.release()
-                    obj = MessageObj(msgObj.sender, None, msgObj.oid, clk, self.clientManager.view_id, 'P')
+                    obj = MessageObj(msgObj.sender, None, msgObj.oid, clk, self.viewId, 'P')
                     obj.replier = self.userId
                     self._sendMessageObjBroadCast(obj, msgObj.sender)
                     # print 'P msg sent'
@@ -171,7 +173,7 @@ class ABCASTManager(object):
                             self.responseReceiver[msgObj.uniqueId()] = (cList, msgObj)
                             lastObj = msgObj
                         if len(cList) == 0:
-                            self._sendMessageObjBroadCast(MessageObj(self.userId, None, lastObj.oid, lastObj.mid, self.clientManager.view_id, 'F'))
+                            self._sendMessageObjBroadCast(MessageObj(self.userId, None, lastObj.oid, lastObj.mid, self.viewId, 'F'))
                             del self.responseReceiver[msgObj.uniqueId()]
                             print 'clear map %s' % str(msgObj.oid)
                 self.receiverMutex.release()
@@ -221,7 +223,7 @@ class ABCASTManager(object):
             msg = self.inputPipe.read()
             self.clockMutex.acquire()
             self.clock += 1
-            msgObj = MessageObj(self.userId, msg, self.clock, self.clock, self.clientManager.view_id, 'A')
+            msgObj = MessageObj(self.userId, msg, self.clock, self.clock, self.viewId, 'A')
             self.clockMutex.release()
             self._sendMessageObjBroadCast(msgObj)
 

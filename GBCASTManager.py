@@ -121,7 +121,8 @@ class GBCASTManager():
         message = GBMessage()
         message.view_id = self.user_m.view_id
         message.action = "fetch_response"
-        message.message = self.abcast.logManager.encodedRecord()
+        #message.message = self.abcast.logManager.encodedRecord()
+        message.message = self.abcast.fetchRecord()
         print 'fetch response', message.message
 
         str_message = message.__encode__()

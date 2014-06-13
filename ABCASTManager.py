@@ -89,6 +89,11 @@ class ABCASTManager(object):
             self.sendProc.setDaemon(True)
             self.sendProc.start()
 
+    def fetchRecord(self):
+        while not self.processQueue.empty():
+            pass
+        return self.logManager.encodedRecord()
+
     def synchronize(self, operationList):
         for op in operationList:
             self.outputPipe.write(op)

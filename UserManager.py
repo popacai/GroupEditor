@@ -102,19 +102,20 @@ class UserManager():
         for user in users:
             if user not in self.user_list:
                 if user not in self.temp_user_list:
-                    #print user + 'not in temp user list error'
+                    print user + 'not in temp user list error'
                     continue
                 self.user_list[user] = self.temp_user_list[user] #copy the socket
 
         temp_to_delete = []
         for user in self.user_list:
             if user not in users:
+                print 'remove', user, "in the user list"
                 self.kicked_user_list.append(user)
-                #print 'remove', user, "in the user list"
                 temp_to_delete.append(user)
                 self.b.remove_addr(user)
 
         for user in temp_to_delete:
+            self.kicked_user_list.append(user)
             self.user_list[user].close()
             self.user_list[user] = None
             del self.user_list[user]

@@ -8,6 +8,7 @@ Group based co-editor. By using [A/C/G]BCAST
 python final_test.py [local_ip_addr] [local port] [remote ip addr] [remote port]
 
 start a new group: 
+
 python final_test.py [local_ip_addr] [local port] n 1
 
 ==========
